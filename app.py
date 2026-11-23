@@ -1,6 +1,5 @@
 """Run with: python -m streamlit run app.py"""
 
-import base64
 import os
 from pathlib import Path
 from time import monotonic
@@ -12,12 +11,14 @@ from coach import MODEL, MODES, OPTIONS, SCENARIOS, SPORTS, TUNING_OPTIONS, Coac
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
+STATIC = ROOT / "static"
+SCENES = ("training", "recovery", "game-iq", "fuel")
 
 st.set_page_config(page_title="CoachBot AI · Training Studio", page_icon="⚡", layout="wide")
 st.html("""<style>
     html {scroll-behavior:smooth;color-scheme:dark}
     [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display:none}
-    [data-testid="stAppViewContainer"] {background:#0d0e10}
+    [data-testid="stAppViewContainer"] {background:#10120f}
     [data-testid="stMainBlockContainer"] {padding:0;max-width:none}
     [data-testid="stMainBlockContainer"] > div {gap:0}
 </style>""")
@@ -88,16 +89,15 @@ def handle_event(event):
     st.session_state.coach_result = {**result, "id": event.get("id"), "seconds": elapsed}
 
 
-@st.cache_data(show_spinner=False)
-def image_data(name, modified):
-    if not modified:
+def film_sources():
+    def media_url(name):
+        asset = STATIC / name
+        if asset.is_file():
+            return f"app/static/{name}?v={asset.stat().st_mtime_ns}"
         return ""
-    return "data:image/webp;base64," + base64.b64encode((WEB / name).read_bytes()).decode("ascii")
 
-
-def web_image(name):
-    path = WEB / name
-    return image_data(name, path.stat().st_mtime_ns if path.exists() else 0)
+    return {scene: {"poster": media_url(f"playbook-{scene}.webp"),
+                    "video": media_url(f"film-{scene}.mp4")} for scene in SCENES}
 
 
 live_enabled = adult_demo_enabled()
@@ -109,9 +109,7 @@ studio = st.components.v2.component(
     js=(WEB / "studio.mjs").read_text(encoding="utf-8"),
 )
 studio_state = studio(key="coach_studio", on_action_change=lambda: None, data={
-    "hero": web_image("athlete.webp"),
-    "playbookArt": {scene: web_image(f"playbook-{scene}.webp")
-                    for scene in ("training", "recovery", "game-iq", "fuel")},
+    "films": film_sources(),
     "sports": SPORTS, "options": OPTIONS,
     "scenarios": SCENARIOS,
     "modes": [{"id": key, "title": value[0], "group": value[1], "description": value[2]}

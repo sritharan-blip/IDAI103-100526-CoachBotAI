@@ -5,7 +5,7 @@
 **CRS Artificial Intelligence · Generative AI Summative Assessment 3 · Scenario 2**  
 Sritharan N S · Jain Vidyalaya IB World School
 
-[Run locally](#run-the-app) · [Screenshots](#app-walkthrough) · [Validation](#validation) · [Storyboard PDF](docs/CoachBot_AI_Storyboard.pdf)
+[Live CoachBot app](https://coachbotai.streamlit.app/) · [Run locally](#run-the-app) · [Screenshots](#app-walkthrough) · [Validation](#validation) · [Storyboard PDF](docs/CoachBot_AI_Storyboard.pdf)
 
 CoachBot is a youth sports coaching prototype. It turns a fictional athlete's sport, position, goal and equipment into a session with concrete next steps. It covers six sports and 26 positions. The app includes 13 coaching modes, four ready-to-run assessment scenarios, plan download, and a Review Lab for comparing outputs and exporting run evidence.
 
@@ -27,7 +27,7 @@ Open the local URL if your browser does not open automatically. Choose **Try an 
 | [Landing screen](docs/screenshots/home.jpg) | Pause or play the live animated background, then open an example. |
 | [Scenario gallery](docs/screenshots/scenarios.jpg) | Load a midfielder, fast bowler, badminton doubles player, or point guard. |
 | [Coaching Playbook](docs/screenshots/playbook.jpg) | Browse 13 modes across four animated scenes, then continue to the athlete profile. |
-| [Sample plan](docs/screenshots/plan.jpg) | Read the action cards and download the plan. |
+| [Sample plan](docs/screenshots/plan.jpg) | Generate a plan for the selected athlete and mode, then download it or open Review Lab. |
 | [Readiness check](docs/screenshots/readiness.jpg) | Run the fast-bowler case and see the local check-in checklist. |
 | [Review Lab](docs/screenshots/review.jpg) | Select two runs, compare the outputs and export run evidence. |
 | [390 px mobile view](docs/screenshots/mobile.jpg) | Use the same profile form and playbook on a narrow screen. |
@@ -100,8 +100,8 @@ The four fictional scenarios were also run in a local Streamlit browser session.
 - Youth conditioning benefits from matching training intensity and volume to the athlete and allowing regular recovery. That informed the profile's intensity, equipment, goal and recovery inputs. [IOC consensus on youth athletic development](https://doi.org/10.1136/bjsports-2015-094962)
 - The youth resistance training consensus informed the emphasis on supervision, technique and gradual progression. [International consensus on youth resistance training](https://doi.org/10.1136/bjsports-2013-092952)
 - The return-to-training path sends possible concussion and current symptoms to a check-in with an adult or healthcare professional. [CDC HEADS UP](https://www.cdc.gov/heads-up/guidelines/returning-to-sports.html)
-- The visual direction draws on oversized typography and layered motion from [Made to Disrupt](https://madetodisrupt.com/). CoachBot uses original runner artwork, animated track lines, and a canvas particle background. Animation can be paused and respects the device's reduced-motion preference.
+- The visual direction draws on oversized typography and layered motion from [Made to Disrupt](https://madetodisrupt.com/). CoachBot uses four bundled sports clips and matching posters for the landing, scenario, and Playbook previews. Motion can be paused and respects the device’s reduced-motion preference.
 
 ## Streamlit Community Cloud
 
-Use `app.py` as the entry point and include `coach.py`, `requirements.txt`, `.streamlit/config.toml` and `web/` in the repository. The public demo runs with the default sample-mode configuration. The deployment page can show the app URL once publishing is complete. [Streamlit deployment and secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management)
+Deploy `app.py` from `main`. The app loads its interface from `web/` and serves its video previews and posters from `static/` through the settings in `.streamlit/config.toml`. The public demo runs with the default sample-mode configuration. [Streamlit deployment and secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management)

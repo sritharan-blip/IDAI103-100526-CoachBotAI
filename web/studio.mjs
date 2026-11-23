@@ -20,6 +20,12 @@ const PLAYBOOK_SCENES = {
   'Game IQ': 'game-iq',
   Fuel: 'fuel',
 };
+const SCENARIO_SCENES = {
+  stamina: 'training',
+  injury: 'recovery',
+  fuel: 'fuel',
+  space: 'game-iq',
+};
 
 function node(tag, className, content) {
   const element = document.createElement(tag);
@@ -40,100 +46,99 @@ function listOptions(select, options, value) {
   if (options.includes(value)) select.value = value;
 }
 
-function createMotion(hero, canvas, toggle) {
-  const context = canvas.getContext('2d');
-  if (!context) {
-    hero.dataset.paused = 'true';
-    toggle.hidden = true;
-    return () => {};
-  }
+function createFilmMotion(root, films) {
+  const hero = root.querySelector('.hero');
+  const toggle = root.querySelector('.motion-toggle');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const particles = Array.from({length: 68}, () => ({
-    x: Math.random(), y: Math.random(), speed: .035 + Math.random() * .14,
-    alpha: .12 + Math.random() * .53, size: .38 + Math.random() * 1.2,
-    trail: Math.random() > .87,
-  }));
-  let paused = reduced.matches;
-  let visible = true;
-  let width = 1, height = 1, frame = 0, previous = 0;
   const controller = new AbortController();
   const {signal} = controller;
+  const visible = new Set();
+  let paused = false;
+  let frame = 0;
 
-  function draw(time = 0) {
-    const delta = previous ? Math.min(.036, (time - previous) / 1000) : 0;
-    previous = time;
-    context.clearRect(0, 0, width, height);
-    for (const particle of particles) {
-      particle.x = (particle.x + delta * particle.speed) % 1;
-      particle.y = (particle.y + 1 - delta * particle.speed * .21) % 1;
-      const x = particle.x * width, y = particle.y * height;
-      context.globalAlpha = particle.alpha * (.24 + particle.x * .76);
-      if (particle.trail) {
-        const length = (10 + particle.size * 25) * (width < 580 ? .55 : 1);
-        const fade = context.createLinearGradient(x - length, y + length * .2, x, y);
-        fade.addColorStop(0, 'transparent');
-        fade.addColorStop(1, '#ff7754');
-        context.strokeStyle = fade;
-        context.lineWidth = particle.size;
-        context.beginPath();
-        context.moveTo(x - length, y + length * .2);
-        context.lineTo(x, y);
-        context.stroke();
-      } else {
-        context.fillStyle = particle.x > .52 ? '#ff9372' : '#f7c6b6';
-        context.beginPath();
-        context.arc(x, y, particle.size, 0, Math.PI * 2);
-        context.fill();
-      }
-    }
-    context.globalAlpha = 1;
-    frame = !paused && visible && !document.hidden ? requestAnimationFrame(draw) : 0;
-  }
+  const clips = [...root.querySelectorAll('[data-film]')].map(host => {
+    const film = films[host.dataset.film];
+    if (film?.poster) host.style.backgroundImage = `url("${film.poster}")`;
+    if (!film?.video) return {host};
+    const video = node('video', 'film-media');
+    video.muted = true;
+    video.defaultMuted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = 'none';
+    video.setAttribute('aria-hidden', 'true');
+    video.addEventListener('playing', () => { host.dataset.playing = 'true'; }, {signal});
+    video.addEventListener('error', () => { delete host.dataset.playing; }, {signal});
+    host.append(video);
+    return {host, video, source: film.video};
+  });
 
   function refresh() {
-    cancelAnimationFrame(frame);
-    previous = 0;
-    draw();
-    toggle.setAttribute('aria-pressed', String(paused));
-    hero.dataset.paused = String(paused);
-    toggle.setAttribute('aria-label', paused ? 'Play background animation' : 'Pause background animation');
-    toggle.firstElementChild.textContent = paused ? '▷' : 'Ⅱ';
-    if (paused) resetParallax();
+    const motion = !paused && !reduced.matches;
+    const label = motion ? 'Pause motion' : 'Play motion';
+    root.dataset.motion = motion ? 'on' : 'off';
+    toggle.hidden = reduced.matches;
+    toggle.setAttribute('aria-label', label);
+    toggle.title = label;
+    toggle.firstElementChild.textContent = motion ? 'Ⅱ' : '▶';
+    for (const {host, video, source} of clips) {
+      if (!video) continue;
+      if (!motion || document.hidden || !visible.has(host) || host.dataset.active === 'false') {
+        video.pause();
+        continue;
+      }
+      if (!video.src) video.src = source;
+      if (video.paused) video.play().catch(() => {});
+    }
+    updateScroll();
   }
-  function resetParallax() {
-    hero.style.removeProperty('--px');
-    hero.style.removeProperty('--py');
+
+  function updateScroll() {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      if (root.dataset.motion !== 'on') {
+        hero.style.removeProperty('--reel-progress');
+        return;
+      }
+      const {top, height} = hero.getBoundingClientRect();
+      const progress = Math.min(1, Math.max(0, -top / height));
+      hero.style.setProperty('--reel-progress', progress.toFixed(3));
+    });
   }
-  const resize = new ResizeObserver(() => {
-    const scale = Math.min(devicePixelRatio || 1, 2);
-    width = hero.clientWidth;
-    height = hero.clientHeight;
-    canvas.width = Math.max(1, width * scale);
-    canvas.height = Math.max(1, height * scale);
-    context.setTransform(scale, 0, 0, scale, 0, 0);
+
+  const screen = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (entry.intersectionRatio >= .12) visible.add(entry.target);
+      else visible.delete(entry.target);
+    }
     refresh();
-  });
-  const intersection = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
-    refresh();
-  });
-  resize.observe(hero);
-  intersection.observe(hero);
-  toggle.addEventListener('click', () => { paused = !paused; refresh(); }, {signal});
-  reduced.addEventListener('change', () => { paused = reduced.matches; refresh(); }, {signal});
+  }, {threshold: .12});
+  for (const {host, video} of clips) if (video) screen.observe(host);
+
+  const chapters = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add('in-view');
+      chapters.unobserve(entry.target);
+    }
+  }, {threshold: .16});
+  for (const chapter of root.querySelectorAll('.case-preview,.mode-stage')) chapters.observe(chapter);
+  document.addEventListener('scroll', updateScroll, {capture: true, passive: true, signal});
   document.addEventListener('visibilitychange', refresh, {signal});
-  hero.addEventListener('pointermove', event => {
-    if (paused || event.pointerType === 'touch') return;
-    const rect = hero.getBoundingClientRect();
-    hero.style.setProperty('--px', (0.5 - (event.clientX - rect.left) / rect.width) * 16 + 'px');
-    hero.style.setProperty('--py', (0.5 - (event.clientY - rect.top) / rect.height) * 10 + 'px');
-  }, {signal});
-  hero.addEventListener('pointerleave', resetParallax, {signal});
-  return () => {
-    controller.abort();
-    resize.disconnect();
-    intersection.disconnect();
-    cancelAnimationFrame(frame);
+  reduced.addEventListener('change', refresh, {signal});
+  toggle.addEventListener('click', () => { paused = !paused; refresh(); }, {signal});
+  refresh();
+
+  return {
+    refresh,
+    dispose() {
+      controller.abort();
+      screen.disconnect();
+      chapters.disconnect();
+      cancelAnimationFrame(frame);
+      for (const {video} of clips) video?.pause();
+    },
   };
 }
 
@@ -141,12 +146,14 @@ function mount(root, component) {
   const $ = (selector) => root.querySelector(selector);
   const form = $('#profile-form');
   const fields = form.elements;
+  const goalLength = $('.goal-length');
+  const profileDetails = $('.profile-details');
+  const profileScenario = $('#profile-scenario');
   const modes = $('#modes');
   const filters = $('#filters');
   const stage = $('.mode-stage');
   const stageVisual = $('.mode-visual');
   const stageCopy = $('.stage-copy');
-  const stageToggle = $('.stage-toggle');
   const stagePrevious = $('#mode-prev');
   const stageNext = $('#mode-next');
   const sportList = $('#sport-list');
@@ -170,51 +177,6 @@ function mount(root, component) {
   let previousConnection = null;
   let renderedMode = null;
   let copyAnimation;
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  let stagePaused = reducedMotion.matches;
-  const stageView = new IntersectionObserver(([entry]) => {
-    stage.dataset.visible = String(entry.isIntersecting);
-  });
-  stageView.observe(stage);
-
-  function syncStageMotion() {
-    const paused = stagePaused || reducedMotion.matches;
-    const label = paused ? 'Play playbook animation' : 'Pause playbook animation';
-    stage.dataset.paused = String(paused);
-    stageToggle.hidden = reducedMotion.matches;
-    stageToggle.setAttribute('aria-label', label);
-    stageToggle.title = label;
-    stageToggle.firstElementChild.textContent = paused ? '▷' : 'Ⅱ';
-    if (paused) {
-      copyAnimation?.cancel();
-      resetStageParallax();
-    }
-  }
-
-  function resetStageParallax() {
-    stage.style.removeProperty('--stage-x');
-    stage.style.removeProperty('--stage-y');
-  }
-
-  function setMotionPreference() {
-    stagePaused = reducedMotion.matches;
-    syncStageMotion();
-  }
-
-  stageToggle.addEventListener('click', () => {
-    if (reducedMotion.matches) return;
-    stagePaused = !stagePaused;
-    syncStageMotion();
-  });
-  reducedMotion.addEventListener('change', setMotionPreference);
-  syncStageMotion();
-  stage.addEventListener('pointermove', event => {
-    if (stagePaused || reducedMotion.matches || event.pointerType === 'touch') return;
-    const bounds = stage.getBoundingClientRect();
-    stage.style.setProperty('--stage-x', ((event.clientX - bounds.left) / bounds.width - .5) * -16 + 'px');
-    stage.style.setProperty('--stage-y', ((event.clientY - bounds.top) / bounds.height - .5) * -12 + 'px');
-  });
-  stage.addEventListener('pointerleave', resetStageParallax);
 
   function notify(type, values) {
     const id = crypto.randomUUID();
@@ -222,21 +184,34 @@ function mount(root, component) {
     return id;
   }
 
-  function goTo(id) {
+  function goTo(id, focus = false) {
     const target = $('#' + id);
-    if (target) target.scrollIntoView({
-      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+    if (!target) return;
+    if (focus) {
+      target.tabIndex = -1;
+      target.focus({preventScroll: true});
+    }
+    target.scrollIntoView({
+      behavior: root.dataset.motion === 'off' ? 'instant' : 'smooth',
       block: 'start',
     });
+  }
+
+  function updateProfilePreview() {
+    $('#profile-athlete').textContent = [fields.sport.value, fields.position.value].filter(Boolean).join(' · ');
+    $('#profile-timing').textContent = [fields.duration.value, fields.intensity.value].filter(Boolean).join(' · ');
+    const used = fields.goal.value.length;
+    goalLength.hidden = used < fields.goal.maxLength - 35;
+    goalLength.textContent = `${used} / ${fields.goal.maxLength}`;
   }
 
   function setSport(sport, position) {
     fields.sport.value = sport;
     listOptions(fields.position, data.sports[sport], position);
-    $('#profile-tag').textContent = sport;
     for (const choice of sportList.children) {
       choice.setAttribute('aria-pressed', String(choice.textContent === sport));
     }
+    updateProfilePreview();
   }
 
   function updateReadiness() {
@@ -259,13 +234,14 @@ function mount(root, component) {
     renderedMode = mode;
     stage.dataset.scene = PLAYBOOK_SCENES[item.group];
     for (const picture of stageVisual.children) {
-      picture.dataset.active = String(picture.dataset.scene === stage.dataset.scene);
+      picture.dataset.active = String(picture.dataset.film === stage.dataset.scene);
     }
     $('#stage-group').textContent = item.group;
     $('#stage-title').textContent = item.title;
     $('#stage-description').textContent = item.description;
     copyAnimation?.cancel();
-    if (!stagePaused && !reducedMotion.matches) {
+    filmPlayer.refresh();
+    if (root.dataset.motion === 'on') {
       copyAnimation = stageCopy.animate([
         {opacity: .28, transform: 'translateY(9px)'},
         {opacity: 1, transform: 'translateY(0)'},
@@ -275,7 +251,7 @@ function mount(root, component) {
 
   function activateMode(item) {
     chooseMode(item);
-    if (item.id === 'recovery' || item.group === 'Fuel') $('.profile-details').open = true;
+    if (item.group === 'Fuel') profileDetails.open = true;
   }
 
   function visibleModes() {
@@ -293,7 +269,7 @@ function mount(root, component) {
     const bounds = card.getBoundingClientRect();
     const delta = bounds.top < listBounds.top ? bounds.top - listBounds.top
       : Math.max(0, bounds.bottom - listBounds.bottom);
-    if (delta) modes.scrollBy({top:delta,behavior:reducedMotion.matches ? 'instant' : 'smooth'});
+    if (delta) modes.scrollBy({top: delta, behavior: root.dataset.motion === 'off' ? 'instant' : 'smooth'});
     return card;
   }
 
@@ -324,8 +300,11 @@ function mount(root, component) {
 
   function chooseFilter(value) {
     filter = value;
+    const available = visibleModes();
+    if (!available.some(item => item.id === mode)) mode = available[0].id;
     for (const choice of filters.children) choice.setAttribute('aria-pressed', String(choice.textContent === value));
     renderModes();
+    if (value === 'Fuel') profileDetails.open = true;
   }
 
   stagePrevious.addEventListener('click', () => navigateMode(-1));
@@ -389,10 +368,12 @@ function mount(root, component) {
 
   function renderOutput(result) {
     output.hidden = false;
+    output.dataset.state = result.error ? 'error' : result.plan ? 'ready' : 'loading';
+    output.dataset.source = result.source || '';
     const title = node('h2', '', result.plan?.title || (result.error ? 'Check your session' : 'Building your session…'));
     title.id = 'output-title';
     const intro = node('div');
-    intro.append(node('p', 'eyebrow', result.source || 'SESSION PLAN'), title);
+    intro.append(node('p', 'output-source', result.source || 'Session plan'), title);
     const top = node('div', 'output-top');
     top.append(intro);
     output.replaceChildren(top);
@@ -401,8 +382,19 @@ function mount(root, component) {
       return;
     }
     const plan = result.plan;
-    top.append(button('Save plan ↓', 'button ghost', () =>
-      download(planText(plan, result.source), 'coachbot-session.txt')));
+    const actions = node('div', 'output-actions');
+    actions.append(
+      button('Save plan ↓', 'button primary', () => download(planText(plan, result.source), 'coachbot-session.txt')),
+      button('Review Lab', 'button ghost', () => $('#review').showModal()),
+    );
+    top.append(actions);
+    const run = data.runs.find(item => item.id === result.id);
+    if (run) {
+      const context = node('ul', 'output-context');
+      context.setAttribute('aria-label', 'Session details');
+      for (const label of [run.sport, run.position, run.mode]) context.append(node('li', '', label));
+      output.append(context);
+    }
     output.append(node('p', 'output-summary', plan.summary));
     const grid = node('div', 'output-grid');
     for (const section of plan.sections) {
@@ -412,7 +404,9 @@ function mount(root, component) {
       card.append(node('h3', '', section.heading), list, node('p', '', section.why));
       grid.append(card);
     }
-    output.append(grid, node('p', 'output-safety', plan.safety));
+    const safety = node('div', 'output-safety');
+    safety.append(node('strong', '', 'Safety note'), node('p', '', plan.safety));
+    output.append(grid, safety);
   }
 
   function renderRuns() {
@@ -468,23 +462,44 @@ function mount(root, component) {
       diet: 'No preference', allergies: '', fuel_goal: '', goal: ''};
     for (const [key, value] of Object.entries(defaults)) fields[key].value = example[key] ?? value;
     updateReadiness();
-    $('.profile-details').open = Boolean(example.injuries || example.allergies);
+    updateProfilePreview();
+    profileScenario.textContent = 'Example · ' + example.title;
+    profileScenario.hidden = false;
+    profileDetails.open = Boolean(example.equipment || example.allergies || example.fuel_goal);
     mode = example.mode;
     chooseFilter('All');
     sample.checked = true;
     sourceNote();
-    goTo('profile-form');
+    goTo('athlete-profile', true);
   }
 
   const sports = Object.keys(data.sports);
-  // Each scene has one image layer so the previous scene can dissolve into the current one.
-  for (const name of Object.values(PLAYBOOK_SCENES)) {
-    const picture = node('div', 'mode-picture');
-    picture.dataset.scene = name;
-    const source = data.playbookArt?.[name] || data.hero;
-    if (source) picture.style.backgroundImage = 'url("' + source + '")';
-    stageVisual.append(picture);
+  const caseFilm = $('.case-film');
+  const caseCaption = $('.case-caption');
+  const scenarioGrid = $('#scenario-grid');
+
+  for (const scene of Object.values(PLAYBOOK_SCENES)) {
+    const stagePicture = node('div', 'mode-picture');
+    stagePicture.dataset.film = scene;
+    stagePicture.dataset.active = 'false';
+    stageVisual.append(stagePicture);
+
+    const casePicture = node('div', 'case-picture');
+    casePicture.dataset.film = scene;
+    casePicture.dataset.active = 'false';
+    caseFilm.append(casePicture);
   }
+
+  const filmPlayer = createFilmMotion(root, data.films);
+
+  function previewScenario(example) {
+    const scene = SCENARIO_SCENES[example.id];
+    for (const picture of caseFilm.children) picture.dataset.active = String(picture.dataset.film === scene);
+    for (const row of scenarioGrid.children) row.dataset.previewing = String(row.dataset.scenario === example.id);
+    caseCaption.textContent = example.sport + ' / ' + example.position;
+    filmPlayer.refresh();
+  }
+
   tuning.append(new Option('Automatic by coaching mode', ''),
     ...Object.entries(data.tuning).map(([value, label]) => new Option(label, value)));
   tuning.closest('label').hidden = !Object.keys(data.tuning).length;
@@ -496,21 +511,32 @@ function mount(root, component) {
   filters.append(...groups.map(group => button(group, '', () => chooseFilter(group))));
   sportList.append(...sports.map(sport => button(sport, 'sport-choice', () => {
     setSport(sport);
-    goTo('builder');
+    goTo('builder', true);
   })));
   setSport(sports[0]);
   chooseFilter(filter);
   updateReadiness();
   fields.sport.addEventListener('change', () => setSport(fields.sport.value));
   fields.readiness.addEventListener('change', updateReadiness);
+  form.addEventListener('input', updateProfilePreview);
   sample.addEventListener('change', sourceNote);
   $('#load-example').addEventListener('click', () => loadExample(data.scenarios[0]));
-  $('#scenario-grid').append(...data.scenarios.map(example => {
-    const card = button('', 'scenario', () => loadExample(example));
-    card.append(node('small', '', example.sport + ' · ' + example.position),
-      node('strong', '', example.title), node('span', '', 'Load profile ↗'));
+  scenarioGrid.append(...data.scenarios.map(example => {
+    const card = button('', 'scenario', () => {
+      previewScenario(example);
+      loadExample(example);
+    });
+    card.dataset.scenario = example.id;
+    card.addEventListener('pointerenter', () => previewScenario(example));
+    card.addEventListener('focus', () => previewScenario(example));
+    const text = node('span', 'scenario-copy');
+    text.append(node('small', '', example.sport + ' · ' + example.position), node('strong', '', example.title));
+    const arrow = node('span', 'scenario-arrow', '↗');
+    arrow.setAttribute('aria-hidden', 'true');
+    card.append(text, arrow);
     return card;
   }));
+  previewScenario(data.scenarios[0]);
   compareFirst.addEventListener('change', renderComparison);
   compareSecond.addEventListener('change', renderComparison);
   exportRuns.addEventListener('click', () => download(
@@ -518,7 +544,7 @@ function mount(root, component) {
   for (const link of root.querySelectorAll('a[href^="#"]')) {
     link.addEventListener('click', event => {
       event.preventDefault();
-      goTo(link.getAttribute('href').slice(1));
+      goTo(link.getAttribute('href').slice(1), true);
     });
   }
   for (const open of root.querySelectorAll('[data-open]')) {
@@ -559,19 +585,15 @@ function mount(root, component) {
     goTo('output');
     pending = notify('generate', {profile, demo: sample.checked, tuning: tuning.value});
   });
-  const dispose = createMotion($('.hero'), $('.motion'), $('.motion-toggle'));
 
   return {
     dispose() {
-      dispose();
-      stageView.disconnect();
+      filmPlayer.dispose();
       copyAnimation?.cancel();
-      reducedMotion.removeEventListener('change', setMotionPreference);
     },
     update(next) {
       data = next.data;
       send = next.setTriggerValue;
-      if (data.hero) $('.hero-image').style.setProperty('--hero-image', 'url("' + data.hero + '")');
       renderConnection();
       renderRuns();
       if (data.result && data.result.id !== shown && (!pending || pending === data.result.id)) {
@@ -581,7 +603,7 @@ function mount(root, component) {
         submit.disabled = false;
         submit.firstElementChild.textContent = 'Generate session';
         renderOutput(data.result);
-        if (justSubmitted) requestAnimationFrame(() => goTo('output'));
+        if (justSubmitted) requestAnimationFrame(() => goTo('output', true));
       }
     },
   };
