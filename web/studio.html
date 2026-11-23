@@ -43,11 +43,39 @@
       <div class="scenario-grid" id="scenario-grid"></div>
     </section>
 
-    <section class="shell builder" id="builder" aria-labelledby="builder-title">
-      <div class="section-heading">
-        <div><p class="eyebrow section-kicker">SESSION BUILDER</p><h2 id="builder-title">Build your session.</h2></div>
-        <p>Set up your athlete profile, then choose what you want to work on.</p>
-      </div>
+    <div class="shell builder" id="builder">
+      <section class="playbook" id="playbook" aria-labelledby="playbook-title">
+        <div class="playbook-header">
+          <h2 id="playbook-title">Coaching<br><em>playbook.</em></h2>
+          <div class="filters" id="filters" role="group" aria-label="Filter coaching modes"></div>
+        </div>
+        <div class="playbook-layout">
+          <div class="mode-stage">
+            <div class="mode-visual" aria-hidden="true"></div>
+            <div class="mode-scrim" aria-hidden="true"></div>
+            <div class="mode-streak" aria-hidden="true"></div>
+            <div class="stage-toolbar">
+              <p class="stage-group" id="stage-group"></p>
+              <button class="stage-toggle" type="button" aria-label="Pause playbook animation"><span aria-hidden="true">Ⅱ</span></button>
+            </div>
+            <div class="stage-copy" aria-live="polite">
+              <h3 id="stage-title"></h3>
+              <p id="stage-description"></p>
+            </div>
+            <div class="stage-footer">
+              <a class="stage-link" href="#profile-form">Continue to profile <span aria-hidden="true">↘</span></a>
+              <div class="stage-nav">
+                <button type="button" id="mode-prev" aria-label="Previous coaching mode">←</button>
+                <button type="button" id="mode-next" aria-label="Next coaching mode">→</button>
+              </div>
+            </div>
+          </div>
+          <aside class="mode-index" aria-label="Coaching mode index">
+            <div class="mode-index-head"><p>Choose a mode</p><span id="mode-count"></span></div>
+            <div class="mode-list" id="modes" role="group" aria-label="Select a coaching mode"></div>
+          </aside>
+        </div>
+      </section>
       <div class="workbench">
         <form class="panel profile" id="profile-form">
           <div class="panel-head"><h3>Athlete profile</h3><span class="tag" id="profile-tag">Football</span></div>
@@ -78,14 +106,9 @@
           <p class="form-note" id="source-note">Samples use built-in plans and work without a key.</p>
         </form>
 
-        <section class="panel playbook" id="playbook" aria-labelledby="playbook-title">
-          <div class="panel-head"><h3 id="playbook-title">Coaching playbook</h3><span class="tag" id="mode-count"></span></div>
-          <div class="filters" id="filters" role="group" aria-label="Filter coaching modes"></div>
-          <div class="mode-grid" id="modes" role="group" aria-label="Select a coaching mode"></div>
-        </section>
       </div>
       <section class="panel output" id="output" aria-labelledby="output-title" aria-live="polite" hidden></section>
-    </section>
+    </div>
   </main>
 
   <footer class="shell footer"><span>COACHBOT AI</span><span>Youth coaching prototype · use fictional profiles</span><button type="button" data-open="review">Review lab</button><a href="#top">Back to top ↑</a></footer>

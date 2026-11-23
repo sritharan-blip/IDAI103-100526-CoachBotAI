@@ -89,12 +89,17 @@ def handle_event(event):
 
 
 @st.cache_data(show_spinner=False)
-def hero_image(modified):
-    path = WEB / "athlete.webp"
-    return "data:image/webp;base64," + base64.b64encode(path.read_bytes()).decode("ascii") if modified else ""
+def image_data(name, modified):
+    if not modified:
+        return ""
+    return "data:image/webp;base64," + base64.b64encode((WEB / name).read_bytes()).decode("ascii")
 
 
-hero = WEB / "athlete.webp"
+def web_image(name):
+    path = WEB / name
+    return image_data(name, path.stat().st_mtime_ns if path.exists() else 0)
+
+
 live_enabled = adult_demo_enabled()
 primary, backup = keys() if live_enabled else ("", "")
 model = configured_model()
@@ -104,7 +109,9 @@ studio = st.components.v2.component(
     js=(WEB / "studio.mjs").read_text(encoding="utf-8"),
 )
 studio_state = studio(key="coach_studio", on_action_change=lambda: None, data={
-    "hero": hero_image(hero.stat().st_mtime_ns if hero.exists() else 0),
+    "hero": web_image("athlete.webp"),
+    "playbookArt": {scene: web_image(f"playbook-{scene}.webp")
+                    for scene in ("training", "recovery", "game-iq", "fuel")},
     "sports": SPORTS, "options": OPTIONS,
     "scenarios": SCENARIOS,
     "modes": [{"id": key, "title": value[0], "group": value[1], "description": value[2]}

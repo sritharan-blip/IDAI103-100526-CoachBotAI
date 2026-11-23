@@ -14,6 +14,12 @@ const MODE_ICONS = {
   decision: 'M5 5v3c0 2 2 4 4 4h6m-3-3 3 3-3 3m-7-3v7m13-14h1v14h-1',
   review: 'M7 4h10m-8-1v3h6V3M6 6H4v15h16V6h-2m-9 7 2 2 4-4',
 };
+const PLAYBOOK_SCENES = {
+  Training: 'training',
+  Recovery: 'recovery',
+  'Game IQ': 'game-iq',
+  Fuel: 'fuel',
+};
 
 function node(tag, className, content) {
   const element = document.createElement(tag);
@@ -137,6 +143,12 @@ function mount(root, component) {
   const fields = form.elements;
   const modes = $('#modes');
   const filters = $('#filters');
+  const stage = $('.mode-stage');
+  const stageVisual = $('.mode-visual');
+  const stageCopy = $('.stage-copy');
+  const stageToggle = $('.stage-toggle');
+  const stagePrevious = $('#mode-prev');
+  const stageNext = $('#mode-next');
   const sportList = $('#sport-list');
   const sample = $('#sample-mode');
   const submit = $('.submit');
@@ -156,6 +168,53 @@ function mount(root, component) {
   let settingsPending = null;
   let shown = null;
   let previousConnection = null;
+  let renderedMode = null;
+  let copyAnimation;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let stagePaused = reducedMotion.matches;
+  const stageView = new IntersectionObserver(([entry]) => {
+    stage.dataset.visible = String(entry.isIntersecting);
+  });
+  stageView.observe(stage);
+
+  function syncStageMotion() {
+    const paused = stagePaused || reducedMotion.matches;
+    const label = paused ? 'Play playbook animation' : 'Pause playbook animation';
+    stage.dataset.paused = String(paused);
+    stageToggle.hidden = reducedMotion.matches;
+    stageToggle.setAttribute('aria-label', label);
+    stageToggle.title = label;
+    stageToggle.firstElementChild.textContent = paused ? '▷' : 'Ⅱ';
+    if (paused) {
+      copyAnimation?.cancel();
+      resetStageParallax();
+    }
+  }
+
+  function resetStageParallax() {
+    stage.style.removeProperty('--stage-x');
+    stage.style.removeProperty('--stage-y');
+  }
+
+  function setMotionPreference() {
+    stagePaused = reducedMotion.matches;
+    syncStageMotion();
+  }
+
+  stageToggle.addEventListener('click', () => {
+    if (reducedMotion.matches) return;
+    stagePaused = !stagePaused;
+    syncStageMotion();
+  });
+  reducedMotion.addEventListener('change', setMotionPreference);
+  syncStageMotion();
+  stage.addEventListener('pointermove', event => {
+    if (stagePaused || reducedMotion.matches || event.pointerType === 'touch') return;
+    const bounds = stage.getBoundingClientRect();
+    stage.style.setProperty('--stage-x', ((event.clientX - bounds.left) / bounds.width - .5) * -16 + 'px');
+    stage.style.setProperty('--stage-y', ((event.clientY - bounds.top) / bounds.height - .5) * -12 + 'px');
+  });
+  stage.addEventListener('pointerleave', resetStageParallax);
 
   function notify(type, values) {
     const id = crypto.randomUUID();
@@ -196,15 +255,52 @@ function mount(root, component) {
       card.setAttribute('aria-pressed', String(selected));
       card.lastElementChild.textContent = selected ? '✓' : '↗';
     }
+    if (renderedMode === mode) return;
+    renderedMode = mode;
+    stage.dataset.scene = PLAYBOOK_SCENES[item.group];
+    for (const picture of stageVisual.children) {
+      picture.dataset.active = String(picture.dataset.scene === stage.dataset.scene);
+    }
+    $('#stage-group').textContent = item.group;
+    $('#stage-title').textContent = item.title;
+    $('#stage-description').textContent = item.description;
+    copyAnimation?.cancel();
+    if (!stagePaused && !reducedMotion.matches) {
+      copyAnimation = stageCopy.animate([
+        {opacity: .28, transform: 'translateY(9px)'},
+        {opacity: 1, transform: 'translateY(0)'},
+      ], {duration: 350, easing: 'cubic-bezier(.22,.68,.25,1)'});
+    }
+  }
+
+  function activateMode(item) {
+    chooseMode(item);
+    if (item.id === 'recovery' || item.group === 'Fuel') $('.profile-details').open = true;
+  }
+
+  function visibleModes() {
+    return data.modes.filter(item => filter === 'All' || item.group === filter);
+  }
+
+  function navigateMode(direction, from = mode) {
+    const list = visibleModes();
+    const current = list.findIndex(item => item.id === from);
+    const index = current < 0 ? (direction < 0 ? list.length - 1 : 0)
+      : (current + direction + list.length) % list.length;
+    activateMode(list[index]);
+    const card = modes.children[index];
+    const listBounds = modes.getBoundingClientRect();
+    const bounds = card.getBoundingClientRect();
+    const delta = bounds.top < listBounds.top ? bounds.top - listBounds.top
+      : Math.max(0, bounds.bottom - listBounds.bottom);
+    if (delta) modes.scrollBy({top:delta,behavior:reducedMotion.matches ? 'instant' : 'smooth'});
+    return card;
   }
 
   function renderModes() {
-    const shownModes = data.modes.filter(item => filter === 'All' || item.group === filter);
+    const shownModes = visibleModes();
     modes.replaceChildren(...shownModes.map(item => {
-      const card = button('', 'mode', () => {
-        chooseMode(item);
-        if (item.id === 'recovery' || item.group === 'Fuel') $('.profile-details').open = true;
-      });
+      const card = button('', 'mode', () => activateMode(item));
       card.dataset.mode = item.id;
       card.setAttribute('aria-pressed', String(item.id === mode));
       const icon = node('span', 'mode-icon');
@@ -217,9 +313,10 @@ function mount(root, component) {
       icon.append(svg);
       const arrow = node('span', 'mode-arrow', item.id === mode ? '✓' : '↗');
       arrow.setAttribute('aria-hidden', 'true');
-      card.append(icon, node('strong', '', item.title), node('small', '', item.description), arrow);
+      card.append(icon, node('strong', '', item.title), arrow);
       return card;
     }));
+    modes.scrollTop = 0;
     const selected = data.modes.find(item => item.id === mode);
     $('#mode-count').textContent = shownModes.length + (shownModes.length === 1 ? ' mode' : ' modes');
     chooseMode(selected);
@@ -230,6 +327,15 @@ function mount(root, component) {
     for (const choice of filters.children) choice.setAttribute('aria-pressed', String(choice.textContent === value));
     renderModes();
   }
+
+  stagePrevious.addEventListener('click', () => navigateMode(-1));
+  stageNext.addEventListener('click', () => navigateMode(1));
+  modes.addEventListener('keydown', event => {
+    const delta = {ArrowUp: -1, ArrowDown: 1}[event.key];
+    if (!delta || event.target.parentElement !== modes) return;
+    event.preventDefault();
+    navigateMode(delta, event.target.dataset.mode).focus({preventScroll:true});
+  });
 
   function sourceNote() {
     $('#source-note').textContent = sample.checked
@@ -367,10 +473,18 @@ function mount(root, component) {
     chooseFilter('All');
     sample.checked = true;
     sourceNote();
-    goTo('builder');
+    goTo('profile-form');
   }
 
   const sports = Object.keys(data.sports);
+  // Each scene has one image layer so the previous scene can dissolve into the current one.
+  for (const name of Object.values(PLAYBOOK_SCENES)) {
+    const picture = node('div', 'mode-picture');
+    picture.dataset.scene = name;
+    const source = data.playbookArt?.[name] || data.hero;
+    if (source) picture.style.backgroundImage = 'url("' + source + '")';
+    stageVisual.append(picture);
+  }
   tuning.append(new Option('Automatic by coaching mode', ''),
     ...Object.entries(data.tuning).map(([value, label]) => new Option(label, value)));
   tuning.closest('label').hidden = !Object.keys(data.tuning).length;
@@ -448,7 +562,12 @@ function mount(root, component) {
   const dispose = createMotion($('.hero'), $('.motion'), $('.motion-toggle'));
 
   return {
-    dispose,
+    dispose() {
+      dispose();
+      stageView.disconnect();
+      copyAnimation?.cancel();
+      reducedMotion.removeEventListener('change', setMotionPreference);
+    },
     update(next) {
       data = next.data;
       send = next.setTriggerValue;

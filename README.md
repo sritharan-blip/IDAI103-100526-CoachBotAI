@@ -26,13 +26,13 @@ Open the local URL if your browser does not open automatically. Choose **Try an 
 | --- | --- |
 | [Landing screen](docs/screenshots/home.jpg) | Pause or play the live animated background, then open an example. |
 | [Scenario gallery](docs/screenshots/scenarios.jpg) | Load a midfielder, fast bowler, badminton doubles player, or point guard. |
-| [Athlete profile and playbook](docs/screenshots/builder.jpg) | Adjust the examples or build a profile from scratch. Filter 13 modes by coaching goal. |
+| [Coaching Playbook](docs/screenshots/playbook.jpg) | Browse 13 modes across four animated scenes, then continue to the athlete profile. |
 | [Sample plan](docs/screenshots/plan.jpg) | Read the action cards and download the plan. |
 | [Readiness check](docs/screenshots/readiness.jpg) | Run the fast-bowler case and see the local check-in checklist. |
 | [Review Lab](docs/screenshots/review.jpg) | Select two runs, compare the outputs and export run evidence. |
 | [390 px mobile view](docs/screenshots/mobile.jpg) | Use the same profile form and playbook on a narrow screen. |
 
-![CoachBot athlete profile and coaching playbook](docs/screenshots/builder.jpg)
+![CoachBot Coaching Playbook showing the animated training preview and mode index](docs/screenshots/playbook.jpg)
 
 ![CoachBot Review Lab comparing a safety check with a sample plan](docs/screenshots/review.jpg)
 
