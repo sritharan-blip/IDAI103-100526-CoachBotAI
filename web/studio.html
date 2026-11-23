@@ -1,0 +1,117 @@
+<div class="studio" id="top">
+  <a class="skip" href="#builder">Skip to session builder</a>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a href="#top" class="brand" aria-label="CoachBot AI home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>COACHBOT<span class="brand-ai">AI</span></span>
+      </a>
+      <nav aria-label="Main navigation"><a href="#scenarios">Scenarios</a><a href="#builder">Session builder</a><button type="button" data-open="review">Review lab</button></nav>
+      <button class="connection" data-open="settings" type="button"><i aria-hidden="true"></i><span id="connection-label">Sample mode</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-image" aria-hidden="true"></div>
+      <div class="hero-scrim" aria-hidden="true"></div>
+      <canvas class="motion" aria-hidden="true"></canvas>
+      <div class="hero-lanes" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="shell hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow hero-eyebrow"><span aria-hidden="true"></span> AI COACHING FOR YOUNG ATHLETES</div>
+          <h1 id="hero-title">TRAIN WITH<br><em>PURPOSE.</em></h1>
+          <p>Build a session around your sport, your position, and what you want to improve.</p>
+          <div class="hero-actions">
+            <a href="#builder" class="button primary">Build my session <span aria-hidden="true">↗</span></a>
+            <button type="button" class="button ghost" id="load-example"><span class="play" aria-hidden="true">▷</span> Try an example</button>
+          </div>
+        </div>
+        <button class="motion-toggle" type="button" aria-pressed="false" aria-label="Pause background animation"><span aria-hidden="true">Ⅱ</span></button>
+      </div>
+    </section>
+
+    <div class="sport-strip">
+      <div class="shell sport-inner"><span class="eyebrow">SPORTS</span><div id="sport-list" class="sport-list" aria-label="Choose a sport"></div></div>
+    </div>
+
+    <section class="shell scenarios" id="scenarios" aria-labelledby="scenario-title">
+      <div class="section-heading">
+        <div><h2 id="scenario-title">Pick a scenario.</h2></div>
+        <p>Start with a fictional athlete profile or build your own session below.</p>
+      </div>
+      <div class="scenario-grid" id="scenario-grid"></div>
+    </section>
+
+    <section class="shell builder" id="builder" aria-labelledby="builder-title">
+      <div class="section-heading">
+        <div><p class="eyebrow section-kicker">SESSION BUILDER</p><h2 id="builder-title">Build your session.</h2></div>
+        <p>Set up your athlete profile, then choose what you want to work on.</p>
+      </div>
+      <div class="workbench">
+        <form class="panel profile" id="profile-form">
+          <div class="panel-head"><h3>Athlete profile</h3><span class="tag" id="profile-tag">Football</span></div>
+          <div class="fields">
+            <label>Sport<select name="sport" required></select></label>
+            <label>Position<select name="position" required></select></label>
+            <label>Age group<select name="age" required></select></label>
+            <label>Session length<select name="duration" required></select></label>
+            <label class="wide">Training goal<input name="goal" required maxlength="210" placeholder="e.g. Improve stamina for the last 15 minutes"></label>
+            <label>Intensity<select name="intensity" required></select></label>
+            <label>Training style<select name="style" required></select></label>
+          </div>
+          <details class="profile-details"><summary>Equipment, recovery & fuel</summary>
+            <div class="fields">
+              <label class="wide">Equipment <span>optional</span><input name="equipment" maxlength="120" placeholder="e.g. Ball and cones"></label>
+              <label class="wide">Training readiness<select name="readiness" required></select></label>
+              <label class="wide" id="injury-field" hidden>Injury or clinician restrictions<textarea name="injuries" rows="2" maxlength="180" placeholder="Describe relevant limitations without including your name."></textarea></label>
+              <label>Diet<select name="diet" required></select></label>
+              <label>Food allergies <span>optional</span><input name="allergies" maxlength="140" placeholder="e.g. Peanuts"></label>
+              <label class="wide">Fuel goal <span>optional</span><input name="fuel_goal" maxlength="100" placeholder="e.g. More energy during afternoon practice"></label>
+            </div>
+          </details>
+          <p class="selected-mode"><span id="selected-mode"></span><a href="#playbook">Change mode</a></p>
+          <div class="submit-bar">
+            <label class="source-control"><input type="checkbox" id="sample-mode"><span>Use sample mode</span></label>
+            <button class="button primary submit" type="submit"><span>Generate session</span><span aria-hidden="true">↗</span></button>
+          </div>
+          <p class="form-note" id="source-note">Samples use built-in plans and work without a key.</p>
+        </form>
+
+        <section class="panel playbook" id="playbook" aria-labelledby="playbook-title">
+          <div class="panel-head"><h3 id="playbook-title">Coaching playbook</h3><span class="tag" id="mode-count"></span></div>
+          <div class="filters" id="filters" role="group" aria-label="Filter coaching modes"></div>
+          <div class="mode-grid" id="modes" role="group" aria-label="Select a coaching mode"></div>
+        </section>
+      </div>
+      <section class="panel output" id="output" aria-labelledby="output-title" aria-live="polite" hidden></section>
+    </section>
+  </main>
+
+  <footer class="shell footer"><span>COACHBOT AI</span><span>Youth coaching prototype · use fictional profiles</span><button type="button" data-open="review">Review lab</button><a href="#top">Back to top ↑</a></footer>
+
+  <dialog class="modal" id="settings" aria-labelledby="settings-title">
+    <div class="modal-head"><div><p class="eyebrow section-kicker">GEMINI</p><h2 id="settings-title">Model settings</h2></div><button class="close" type="button" aria-label="Close settings">×</button></div>
+    <p id="key-description">CoachBot tries the primary Gemini key first, then the backup after an eligible key, quota, or service error.</p>
+    <form id="key-form" autocomplete="off">
+      <label>Primary Gemini key <span id="primary-state"></span><input name="primary" type="password" minlength="12" maxlength="256" autocomplete="new-password" placeholder="Enter primary key"></label>
+      <label>Backup Gemini key <span id="backup-state"></span><input name="backup" type="password" minlength="12" maxlength="256" autocomplete="new-password" placeholder="Enter a different Gemini key"></label>
+      <p class="form-note">Keys entered here are kept on the server for this session. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Open Google AI Studio ↗</a></p>
+      <p id="settings-status" role="status"></p>
+      <div class="modal-actions"><button class="button ghost" id="clear-keys" type="button">Clear session keys</button><button class="button primary" type="submit">Save keys <span aria-hidden="true">↗</span></button></div>
+    </form>
+  </dialog>
+
+  <dialog class="modal review-modal" id="review" aria-labelledby="review-title">
+    <div class="modal-head"><div><p class="eyebrow section-kicker">THIS SESSION</p><h2 id="review-title">Review lab</h2></div><button class="close" type="button" aria-label="Close review lab">×</button></div>
+    <p>Compare two plans or export the last 12 runs for your assessment.</p>
+    <label class="run-tuning" hidden>Setting for your next live run<select id="model-tuning"></select></label>
+    <div class="compare-controls" hidden>
+      <label>First plan<select id="compare-first"></select></label>
+      <label>Second plan<select id="compare-second"></select></label>
+    </div>
+    <div id="compare-results" class="compare-results" aria-live="polite"></div>
+    <div id="run-log"></div>
+    <button class="button ghost export-runs" type="button" hidden>Export run evidence ↓</button>
+  </dialog>
+</div>
