@@ -26,10 +26,12 @@ def render_hero():
         <div class="hero-copy">
           <div class="eyebrow hero-eyebrow">COACHING STUDIO /</div>
           <h1 id="hero-title">COACHING<br><em>IN SESSION.</em></h1>
-          <p>Your sport. Your position. Your next move.</p>
-          <div class="hero-actions">
-            <a href="#builder" class="button primary">Start a session <span aria-hidden="true">↗</span></a>
-            <button type="button" class="button ghost" id="load-example"><span class="play" aria-hidden="true">▷</span> Try an example</button>
+          <div class="hero-brief">
+            <p>Your sport. Your position. Your next move.</p>
+            <div class="hero-actions">
+              <a href="#builder" class="button primary">Start a session <span aria-hidden="true">↗</span></a>
+              <button type="button" class="button ghost" id="load-example"><span class="play" aria-hidden="true">▷</span> Try an example</button>
+            </div>
           </div>
         </div>
         <div class="hero-reel" aria-label="Coaching footage">
