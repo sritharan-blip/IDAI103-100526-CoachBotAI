@@ -161,6 +161,9 @@ function mount(root, component) {
   const submit = $('.submit');
   const output = $('#output');
   const keyForm = $('#key-form');
+  const testGemini = $('#test-gemini');
+  const clearKeys = $('#clear-keys');
+  const saveKeys = keyForm.querySelector('button[type=submit]');
   const tuning = $('#model-tuning');
   const comparison = $('.compare-controls');
   const compareFirst = $('#compare-first');
@@ -173,6 +176,7 @@ function mount(root, component) {
   let mode = 'workout';
   let pending = null;
   let settingsPending = null;
+  let selectedScenario = data.scenarios[0];
   let shown = null;
   let previousConnection = null;
   let renderedMode = null;
@@ -224,6 +228,9 @@ function mount(root, component) {
   function chooseMode(item) {
     mode = item.id;
     $('#selected-mode').textContent = item.title;
+    const list = visibleModes();
+    $('#stage-position').textContent = `${list.findIndex(option => option.id === mode) + 1} of ${list.length}`;
+    modes.dataset.scene = PLAYBOOK_SCENES[item.group];
     modes.setAttribute('aria-label', 'Select a coaching mode. Selected: ' + item.title);
     for (const card of modes.children) {
       const selected = card.dataset.mode === mode;
@@ -335,8 +342,7 @@ function mount(root, component) {
       : 'This demo uses built-in plans. A private, adult-operated installation can enable live Gemini for fictional profiles.';
     $('#primary-state').textContent = primary ? 'Configured' : '';
     $('#backup-state').textContent = backup ? (distinct ? 'Configured' : 'Matches primary') : '';
-    $('#clear-keys').disabled = !session;
-    $('#settings-status').textContent = 'Model · ' + model;
+    $('#settings-status').textContent = settingsPending ? 'Updating session keys…' : 'Model · ' + model;
     if (previousConnection !== live) {
       sample.checked = !live;
       previousConnection = live;
@@ -346,6 +352,9 @@ function mount(root, component) {
       $('#settings-status').textContent = 'Settings updated · ' + model;
       settingsPending = null;
     }
+    testGemini.disabled = !live || Boolean(settingsPending);
+    clearKeys.disabled = !session || Boolean(settingsPending);
+    saveKeys.disabled = Boolean(settingsPending);
   }
 
   function planText(plan, label) {
@@ -392,7 +401,9 @@ function mount(root, component) {
     if (run) {
       const context = node('ul', 'output-context');
       context.setAttribute('aria-label', 'Session details');
-      for (const label of [run.sport, run.position, run.mode]) context.append(node('li', '', label));
+      const labels = [run.sport, run.position, run.mode];
+      if (run.model) labels.push(run.model, `${run.seconds} s`);
+      for (const label of labels) context.append(node('li', '', label));
       output.append(context);
     }
     output.append(node('p', 'output-summary', plan.summary));
@@ -455,18 +466,24 @@ function mount(root, component) {
     }
   }
 
-  function loadExample(example) {
-    setSport(example.sport, example.position);
-    const defaults = {age: data.options.age[1], duration: data.options.duration[1], intensity: 'Easy',
+  function exampleProfile(example) {
+    const defaults = {sport: example.sport, position: example.position, mode: example.mode,
+      age: data.options.age[1], duration: data.options.duration[1], intensity: 'Easy',
       style: 'Mixed session', equipment: '', readiness: 'Ready to train', injuries: '',
       diet: 'No preference', allergies: '', fuel_goal: '', goal: ''};
-    for (const [key, value] of Object.entries(defaults)) fields[key].value = example[key] ?? value;
+    return Object.fromEntries(Object.entries(defaults).map(([key, value]) => [key, example[key] ?? value]));
+  }
+
+  function loadExample(example) {
+    const {sport, position, mode: exampleMode, ...values} = exampleProfile(example);
+    setSport(sport, position);
+    for (const [key, value] of Object.entries(values)) fields[key].value = value;
     updateReadiness();
     updateProfilePreview();
     profileScenario.textContent = 'Example · ' + example.title;
     profileScenario.hidden = false;
     profileDetails.open = Boolean(example.equipment || example.allergies || example.fuel_goal);
-    mode = example.mode;
+    mode = exampleMode;
     chooseFilter('All');
     sample.checked = true;
     sourceNote();
@@ -493,10 +510,14 @@ function mount(root, component) {
   const filmPlayer = createFilmMotion(root, data.films);
 
   function previewScenario(example) {
+    selectedScenario = example;
     const scene = SCENARIO_SCENES[example.id];
+    caseFilm.parentElement.dataset.scene = scene;
     for (const picture of caseFilm.children) picture.dataset.active = String(picture.dataset.film === scene);
-    for (const row of scenarioGrid.children) row.dataset.previewing = String(row.dataset.scenario === example.id);
+    for (const row of scenarioGrid.children) row.setAttribute('aria-pressed', String(row.dataset.scenario === example.id));
     caseCaption.textContent = example.sport + ' / ' + example.position;
+    $('#case-title').textContent = example.title;
+    $('#case-goal').textContent = example.goal;
     filmPlayer.refresh();
   }
 
@@ -505,8 +526,8 @@ function mount(root, component) {
   tuning.closest('label').hidden = !Object.keys(data.tuning).length;
   listOptions(fields.sport, sports);
   for (const [name, options] of Object.entries(data.options)) listOptions(fields[name], options);
-  fields.age.value = '13–15';
-  fields.duration.value = '25 minutes';
+  fields.age.value = data.options.age[1];
+  fields.duration.value = data.options.duration[1];
   const groups = ['All', ...new Set(data.modes.map(item => item.group))];
   filters.append(...groups.map(group => button(group, '', () => chooseFilter(group))));
   sportList.append(...sports.map(sport => button(sport, 'sport-choice', () => {
@@ -521,14 +542,11 @@ function mount(root, component) {
   form.addEventListener('input', updateProfilePreview);
   sample.addEventListener('change', sourceNote);
   $('#load-example').addEventListener('click', () => loadExample(data.scenarios[0]));
+  $('#use-scenario').addEventListener('click', () => loadExample(selectedScenario));
   scenarioGrid.append(...data.scenarios.map(example => {
-    const card = button('', 'scenario', () => {
-      previewScenario(example);
-      loadExample(example);
-    });
+    const card = button('', 'scenario', () => previewScenario(example));
     card.dataset.scenario = example.id;
-    card.addEventListener('pointerenter', () => previewScenario(example));
-    card.addEventListener('focus', () => previewScenario(example));
+    card.dataset.scene = SCENARIO_SCENES[example.id];
     const text = node('span', 'scenario-copy');
     text.append(node('small', '', example.sport + ' · ' + example.position), node('strong', '', example.title));
     const arrow = node('span', 'scenario-arrow', '↗');
@@ -553,6 +571,7 @@ function mount(root, component) {
   for (const close of root.querySelectorAll('.modal .close')) close.addEventListener('click', () => close.closest('dialog').close());
   keyForm.addEventListener('submit', event => {
     event.preventDefault();
+    if (settingsPending) return;
     const primary = keyForm.elements.primary.value.trim();
     const backup = keyForm.elements.backup.value.trim();
     if (!primary && !backup) {
@@ -568,22 +587,32 @@ function mount(root, component) {
       return;
     }
     keyForm.reset();
-    $('#settings-status').textContent = 'Saving…';
     settingsPending = notify('save_keys', {primary, backup});
+    renderConnection();
   });
-  $('#clear-keys').addEventListener('click', () => {
+  clearKeys.addEventListener('click', () => {
+    if (settingsPending) return;
     keyForm.reset();
     settingsPending = notify('clear_keys', {});
+    renderConnection();
   });
-  form.addEventListener('submit', event => {
-    event.preventDefault();
+
+  function startGeneration(profile, demo) {
     if (pending) return;
-    const profile = {...Object.fromEntries(new FormData(form)), mode};
     submit.disabled = true;
     submit.firstElementChild.textContent = 'Generating…';
     renderOutput({});
     goTo('output');
-    pending = notify('generate', {profile, demo: sample.checked, tuning: tuning.value});
+    pending = notify('generate', {profile, demo, tuning: tuning.value});
+  }
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    startGeneration({...Object.fromEntries(new FormData(form)), mode}, sample.checked);
+  });
+  testGemini.addEventListener('click', () => {
+    $('#settings').close();
+    startGeneration(exampleProfile(data.scenarios[0]), false);
   });
 
   return {

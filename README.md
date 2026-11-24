@@ -25,7 +25,7 @@ Open the local URL if your browser does not open automatically. Choose **Try an 
 | Screen | What to try |
 | --- | --- |
 | [Landing screen](docs/screenshots/home.jpg) | Pause or play the live animated background, then open an example. |
-| [Scenario gallery](docs/screenshots/scenarios.jpg) | Load a midfielder, fast bowler, badminton doubles player, or point guard. |
+| [Scenario gallery](docs/screenshots/scenarios.jpg) | Preview a midfielder, fast bowler, badminton doubles player, or point guard. Choose **Use this scenario** to load the selected profile. |
 | [Coaching Playbook](docs/screenshots/playbook.jpg) | Browse 13 modes across four animated scenes, then continue to the athlete profile. |
 | [Sample plan](docs/screenshots/plan.jpg) | Generate a plan for the selected athlete and mode, then download it or open Review Lab. |
 | [Readiness check](docs/screenshots/readiness.jpg) | Run the fast-bowler case and see the local check-in checklist. |
@@ -69,6 +69,8 @@ The exact prompts and sample templates are in [coach.py](coach.py). The six spor
 The ordinary installation starts in sample mode. Google limits Gemini API use to adults and restricts its use in apps directed toward people under 18. Use live integration in a private, adult-operated assessment demo with fictional profiles. Keep the public classroom demo in sample mode. [Gemini API Additional Terms](https://aistudio.google.com/docs/terms#age-requirements)
 
 For a private demo, copy [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example) to `.streamlit/secrets.toml` and set `COACHBOT_ADULT_DEMO = "true"`. Configure `GEMINI_API_KEY` and optionally `GEMINI_API_KEY_BACKUP` there, or enter the keys in **Model settings** for that browser session. Keep actual keys out of Git, screenshots, and hand-ins. Keys from the same Google project may draw on the same quota.
+
+After saving a key in the private demo, choose **Test Gemini** in **Model settings**. CoachBot sends its built-in fictional football profile through the normal plan workflow. The result identifies whether Gemini used the primary or backup key and shows the model and elapsed time.
 
 | Configured model | Comparison control in Review Lab |
 | --- | --- |

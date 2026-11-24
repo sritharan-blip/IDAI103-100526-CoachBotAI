@@ -43,11 +43,21 @@
       <div class="shell case-shell">
         <div class="section-heading">
           <h2 id="scenario-title">Pick a scenario.</h2>
-          <p>Load a fictional athlete profile to try CoachBot with a real training goal.</p>
+          <p>Explore four fictional athletes, then load one into the session builder.</p>
         </div>
         <div class="case-layout">
-          <div class="case-preview" aria-hidden="true"><div class="case-film"></div><p class="case-caption"></p></div>
-          <div class="scenario-grid" id="scenario-grid"></div>
+          <div class="scenario-grid" id="scenario-grid" role="group" aria-label="Choose a scenario to preview"></div>
+          <article class="case-preview" aria-labelledby="case-title">
+            <div class="case-film" aria-hidden="true"></div>
+            <div class="case-detail">
+              <div class="case-text" aria-live="polite">
+                <p class="case-caption"></p>
+                <h3 id="case-title"></h3>
+                <p id="case-goal"></p>
+              </div>
+              <button type="button" class="button primary" id="use-scenario">Use this scenario <span aria-hidden="true">↗</span></button>
+            </div>
+          </article>
         </div>
       </div>
     </section>
@@ -64,6 +74,7 @@
             <div class="mode-scrim" aria-hidden="true"></div>
             <div class="stage-toolbar">
               <p class="stage-group" id="stage-group"></p>
+              <p class="stage-position" id="stage-position"></p>
             </div>
             <div class="stage-copy" aria-live="polite">
               <h3 id="stage-title"></h3>
@@ -151,6 +162,10 @@
       <p class="form-note">Keys entered here are kept on the server for this session. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Open Google AI Studio ↗</a></p>
       <p id="settings-status" role="status"></p>
       <div class="modal-actions"><button class="button ghost" id="clear-keys" type="button">Clear session keys</button><button class="button primary" type="submit">Save keys <span aria-hidden="true">↗</span></button></div>
+      <div class="model-test">
+        <p id="test-explanation">Send a built-in fictional athlete profile to Gemini and see which key produced the plan.</p>
+        <button class="button ghost" id="test-gemini" type="button" aria-describedby="test-explanation" disabled>Test Gemini <span aria-hidden="true">↗</span></button>
+      </div>
     </form>
   </dialog>
 
