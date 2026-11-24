@@ -16,37 +16,15 @@
   </header>
 
   <main>
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="shell hero-inner">
-        <div class="hero-copy">
-          <div class="eyebrow hero-eyebrow"><span aria-hidden="true"></span> AI COACHING FOR YOUNG ATHLETES</div>
-          <h1 id="hero-title">TRAIN WITH<br><em>PURPOSE.</em></h1>
-          <p>Build a session around your sport, your position, and what you want to improve.</p>
-          <div class="hero-actions">
-            <a href="#builder" class="button primary">Build my session <span aria-hidden="true">↗</span></a>
-            <button type="button" class="button ghost" id="load-example"><span class="play" aria-hidden="true">▷</span> Try an example</button>
-          </div>
-        </div>
-        <div class="hero-reel" aria-label="Coaching footage">
-          <div class="hero-screen" id="hero-films" aria-hidden="true"></div>
-          <div class="hero-reel-controls">
-            <div class="hero-films" id="hero-film-picker" role="group" aria-label="Select a featured clip"></div>
-            <button class="film-trigger" id="watch-hero" type="button" aria-haspopup="dialog"><span aria-hidden="true">▷</span> Watch clip</button>
-          </div>
-        </div>
-        <a class="hero-scroll" href="#scenarios">Explore scenarios <span aria-hidden="true">↓</span></a>
-      </div>
-    </section>
+    <!-- CoachBot hero -->
 
-    <div class="sport-strip">
-      <div class="shell sport-inner"><span class="eyebrow">SPORTS</span><div id="sport-list" class="sport-list" aria-label="Choose a sport"></div></div>
-    </div>
+    <!-- CoachBot sports band -->
 
     <section class="scenarios" id="scenarios" aria-labelledby="scenario-title">
       <div class="shell case-shell">
         <div class="section-heading">
           <h2 id="scenario-title">Pick a scenario.</h2>
-          <p>Explore four fictional athletes, then load one into the session builder.</p>
+          <p>Four fictional athletes. Choose one to start a session.</p>
         </div>
         <div class="case-layout">
           <div class="scenario-grid" id="scenario-grid" role="group" aria-label="Choose a scenario to preview"></div>
@@ -103,9 +81,9 @@
       <section class="workbench" id="athlete-profile" aria-labelledby="profile-title">
         <div class="profile-intro">
           <h3 id="profile-title">Athlete<br>profile.</h3>
-          <p>Set the athlete’s goal and what they can do in this session.</p>
+          <p>Set the goal, equipment and training readiness.</p>
           <div class="profile-preview" aria-labelledby="session-preview-title">
-            <p class="eyebrow" id="session-preview-title">SESSION PREVIEW</p>
+            <p class="eyebrow" id="session-preview-title">SESSION PREVIEW /</p>
             <p class="profile-scenario" id="profile-scenario" hidden></p>
             <strong id="selected-mode"></strong>
             <p id="profile-athlete"></p>

@@ -15,13 +15,39 @@ STATIC = ROOT / "static"
 SCENES = ("training", "recovery", "game-iq", "fuel")
 
 st.set_page_config(page_title="CoachBot AI · Training Studio", page_icon="⚡", layout="wide")
-st.html("""<style>
-    html {scroll-behavior:smooth;color-scheme:dark}
-    [data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu {display:none}
-    [data-testid="stAppViewContainer"] {background:#10120f}
-    [data-testid="stMainBlockContainer"] {padding:0;max-width:none}
-    [data-testid="stMainBlockContainer"] > div {gap:0}
-</style>""")
+with (ROOT / "styles.css").open(encoding="utf-8") as stylesheet:
+    page_css, component_css = stylesheet.read().split("/* CoachBot component */", maxsplit=1)
+st.markdown(f"<style>{page_css}</style>", unsafe_allow_html=True)
+
+
+def render_hero():
+    return """    <section class="hero" aria-labelledby="hero-title">
+      <div class="shell hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow hero-eyebrow">COACHING STUDIO /</div>
+          <h1 id="hero-title">COACHING<br><em>IN SESSION.</em></h1>
+          <p>Your sport. Your position. Your next move.</p>
+          <div class="hero-actions">
+            <a href="#builder" class="button primary">Start a session <span aria-hidden="true">↗</span></a>
+            <button type="button" class="button ghost" id="load-example"><span class="play" aria-hidden="true">▷</span> Try an example</button>
+          </div>
+        </div>
+        <div class="hero-reel" aria-label="Coaching footage">
+          <div class="hero-screen" id="hero-films" aria-hidden="true"></div>
+          <div class="hero-reel-controls">
+            <div class="hero-films" id="hero-film-picker" role="group" aria-label="Select a featured clip"></div>
+            <button class="film-trigger" id="watch-hero" type="button" aria-haspopup="dialog"><span aria-hidden="true">▷</span> Watch clip</button>
+          </div>
+        </div>
+        <a class="hero-scroll" href="#scenarios">Explore scenarios <span aria-hidden="true">↓</span></a>
+      </div>
+    </section>"""
+
+
+def render_sports_band():
+    return """    <div class="sport-strip">
+      <div class="shell sport-inner"><span class="eyebrow">SPORTS /</span><div id="sport-list" class="sport-list" aria-label="Choose a sport"></div></div>
+    </div>"""
 
 
 def configured(name):
@@ -103,9 +129,12 @@ def film_sources():
 live_enabled = adult_demo_enabled()
 primary, backup = keys() if live_enabled else ("", "")
 model = configured_model()
+studio_html = (WEB / "studio.html").read_text(encoding="utf-8")
+studio_html = studio_html.replace("<!-- CoachBot hero -->", render_hero())
+studio_html = studio_html.replace("<!-- CoachBot sports band -->", render_sports_band())
 studio = st.components.v2.component(
-    "coachbot_studio", html=(WEB / "studio.html").read_text(encoding="utf-8"),
-    css=(WEB / "studio.css").read_text(encoding="utf-8"),
+    "coachbot_studio", html=studio_html,
+    css=component_css,
     js=(WEB / "studio.mjs").read_text(encoding="utf-8"),
 )
 studio_state = studio(key="coach_studio", on_action_change=lambda: None, data={
