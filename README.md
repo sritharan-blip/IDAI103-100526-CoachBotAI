@@ -40,11 +40,9 @@ Open the local URL shown in the terminal. The sample workflow runs without crede
 | [Review Lab](docs/screenshots/review.jpg) | Select two runs, compare the outputs and export run evidence. |
 | [390 px mobile view](docs/screenshots/mobile.jpg) | Use the same profile form and playbook on a narrow screen. |
 
+![CoachBot's live landing page showing the Game IQ sports clip and the four-category selector](docs/screenshots/home.jpg)
+
 ![A CoachBot session with the progress bar and a completed step](docs/screenshots/plan.jpg)
-
-![CoachBot Coaching Playbook showing the animated training preview and mode index](docs/screenshots/playbook.jpg)
-
-![CoachBot Review Lab comparing a safety check with a sample plan](docs/screenshots/review.jpg)
 
 ## Coaching playbook
 
