@@ -6,10 +6,11 @@
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span>COACHBOT<span class="brand-ai">AI</span></span>
       </a>
-      <nav aria-label="Main navigation"><a href="#scenarios">Scenarios</a><a href="#playbook">Playbook</a><a href="#athlete-profile">Athlete profile</a><button type="button" data-open="review">Review Lab</button></nav>
+      <nav class="topnav" aria-label="Main navigation"><a href="#scenarios">Scenarios</a><a href="#playbook">Playbook</a><a href="#athlete-profile">Athlete profile</a></nav>
       <div class="header-actions">
         <button class="motion-toggle" type="button" aria-label="Pause motion" title="Pause motion"><span aria-hidden="true">Ⅱ</span></button>
         <button class="connection" data-open="settings" type="button"><i aria-hidden="true"></i><span id="connection-label">Sample mode</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+        <button class="menu-toggle" data-open="studio-menu" type="button" aria-label="Open CoachBot menu" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M3 16h13"/></svg></button>
       </div>
     </div>
   </header>
@@ -17,11 +18,6 @@
   <main>
     <section class="hero" aria-labelledby="hero-title">
       <div class="shell hero-inner">
-        <div class="hero-reel" aria-hidden="true">
-          <div class="hero-shot hero-shot-track" data-film="training"></div>
-          <div class="hero-shot hero-shot-court" data-film="game-iq"></div>
-          <div class="hero-shot hero-shot-warmup" data-film="recovery"></div>
-        </div>
         <div class="hero-copy">
           <div class="eyebrow hero-eyebrow"><span aria-hidden="true"></span> AI COACHING FOR YOUNG ATHLETES</div>
           <h1 id="hero-title">TRAIN WITH<br><em>PURPOSE.</em></h1>
@@ -29,6 +25,13 @@
           <div class="hero-actions">
             <a href="#builder" class="button primary">Build my session <span aria-hidden="true">↗</span></a>
             <button type="button" class="button ghost" id="load-example"><span class="play" aria-hidden="true">▷</span> Try an example</button>
+          </div>
+        </div>
+        <div class="hero-reel" aria-label="Coaching footage">
+          <div class="hero-screen" id="hero-films" aria-hidden="true"></div>
+          <div class="hero-reel-controls">
+            <div class="hero-films" id="hero-film-picker" role="group" aria-label="Select a featured clip"></div>
+            <button class="film-trigger" id="watch-hero" type="button" aria-haspopup="dialog"><span aria-hidden="true">▷</span> Watch clip</button>
           </div>
         </div>
         <a class="hero-scroll" href="#scenarios">Explore scenarios <span aria-hidden="true">↓</span></a>
@@ -55,7 +58,10 @@
                 <h3 id="case-title"></h3>
                 <p id="case-goal"></p>
               </div>
-              <button type="button" class="button primary" id="use-scenario">Use this scenario <span aria-hidden="true">↗</span></button>
+              <div class="case-actions">
+                <button type="button" class="button primary" id="use-scenario">Use this scenario <span aria-hidden="true">↗</span></button>
+                <button type="button" class="film-trigger" id="watch-scenario" aria-haspopup="dialog"><span aria-hidden="true">▷</span> Watch clip</button>
+              </div>
             </div>
           </article>
         </div>
@@ -74,7 +80,7 @@
             <div class="mode-scrim" aria-hidden="true"></div>
             <div class="stage-toolbar">
               <p class="stage-group" id="stage-group"></p>
-              <p class="stage-position" id="stage-position"></p>
+              <div class="stage-tools"><p class="stage-position" id="stage-position"></p><button type="button" class="film-trigger" id="watch-mode" aria-haspopup="dialog"><span aria-hidden="true">▷</span> Watch clip</button></div>
             </div>
             <div class="stage-copy" aria-live="polite">
               <h3 id="stage-title"></h3>
@@ -152,6 +158,22 @@
   </main>
 
   <footer class="shell footer"><span>COACHBOT AI</span><span>Youth coaching prototype · use fictional profiles</span><a href="#top">Back to top ↑</a></footer>
+
+  <dialog class="modal menu-panel" id="studio-menu" aria-labelledby="menu-title">
+    <div class="modal-head"><h2 id="menu-title">Explore CoachBot</h2><button class="close" type="button" aria-label="Close CoachBot menu">×</button></div>
+    <nav aria-label="CoachBot sections">
+      <a href="#scenarios">Scenarios <span aria-hidden="true">↗</span></a>
+      <a href="#playbook">Coaching Playbook <span aria-hidden="true">↗</span></a>
+      <a href="#athlete-profile">Athlete profile <span aria-hidden="true">↗</span></a>
+      <button type="button" data-open="review">Review Lab <span aria-hidden="true">↗</span></button>
+    </nav>
+  </dialog>
+
+  <dialog class="modal film-dialog" id="film-dialog" aria-labelledby="film-title">
+    <div class="modal-head"><h2 id="film-title"></h2><button class="close" type="button" aria-label="Close video preview">×</button></div>
+    <video controls muted playsinline preload="metadata" aria-labelledby="film-title"></video>
+    <p id="film-description"></p>
+  </dialog>
 
   <dialog class="modal" id="settings" aria-labelledby="settings-title">
     <div class="modal-head"><div><p class="eyebrow section-kicker">GEMINI</p><h2 id="settings-title">Model settings</h2></div><button class="close" type="button" aria-label="Close settings">×</button></div>

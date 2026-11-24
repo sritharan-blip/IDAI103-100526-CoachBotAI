@@ -26,6 +26,12 @@ const SCENARIO_SCENES = {
   fuel: 'fuel',
   space: 'game-iq',
 };
+const FILM_LABELS = {
+  training: ['Track training', 'A track session preview for the Training modes.'],
+  recovery: ['Warm-up and recovery', 'An athlete preparing to move, from the Recovery modes.'],
+  'game-iq': ['Court play', 'A court preview for the Game IQ modes.'],
+  fuel: ['Tournament fuel', 'A preparation preview for the Fuel modes.'],
+};
 
 function node(tag, className, content) {
   const element = document.createElement(tag);
@@ -75,6 +81,7 @@ function createFilmMotion(root, films) {
 
   function refresh() {
     const motion = !paused && !reduced.matches;
+    const unobstructed = motion && !document.hidden && !root.querySelector('dialog[open]');
     const label = motion ? 'Pause motion' : 'Play motion';
     root.dataset.motion = motion ? 'on' : 'off';
     toggle.hidden = reduced.matches;
@@ -83,7 +90,7 @@ function createFilmMotion(root, films) {
     toggle.firstElementChild.textContent = motion ? 'Ⅱ' : '▶';
     for (const {host, video, source} of clips) {
       if (!video) continue;
-      if (!motion || document.hidden || !visible.has(host) || host.dataset.active === 'false') {
+      if (!unobstructed || !visible.has(host) || host.dataset.active === 'false') {
         video.pause();
         continue;
       }
@@ -123,7 +130,7 @@ function createFilmMotion(root, films) {
       chapters.unobserve(entry.target);
     }
   }, {threshold: .16});
-  for (const chapter of root.querySelectorAll('.case-preview,.mode-stage')) chapters.observe(chapter);
+  for (const chapter of root.querySelectorAll('.case-shell .section-heading,.case-preview,.scenario-grid,.playbook-header,.mode-stage,.mode-index,.profile-intro,.profile-group,.output')) chapters.observe(chapter);
   document.addEventListener('scroll', updateScroll, {capture: true, passive: true, signal});
   document.addEventListener('visibilitychange', refresh, {signal});
   reduced.addEventListener('change', refresh, {signal});
@@ -160,6 +167,11 @@ function mount(root, component) {
   const sample = $('#sample-mode');
   const submit = $('.submit');
   const output = $('#output');
+  const hero = $('.hero');
+  const heroFilms = $('#hero-films');
+  const heroPicker = $('#hero-film-picker');
+  const filmDialog = $('#film-dialog');
+  const filmVideo = filmDialog.querySelector('video');
   const keyForm = $('#key-form');
   const testGemini = $('#test-gemini');
   const clearKeys = $('#clear-keys');
@@ -177,6 +189,7 @@ function mount(root, component) {
   let pending = null;
   let settingsPending = null;
   let selectedScenario = data.scenarios[0];
+  let featuredScene = 'training';
   let shown = null;
   let previousConnection = null;
   let renderedMode = null;
@@ -199,6 +212,22 @@ function mount(root, component) {
       behavior: root.dataset.motion === 'off' ? 'instant' : 'smooth',
       block: 'start',
     });
+  }
+
+  function openDialog(dialog) {
+    dialog.showModal();
+    filmPlayer.refresh();
+  }
+
+  function watchFilm(scene, title, description) {
+    const film = data.films[scene];
+    if (!film?.video) return;
+    $('#film-title').textContent = title;
+    $('#film-description').textContent = description;
+    filmVideo.poster = film.poster;
+    filmVideo.src = film.video;
+    openDialog(filmDialog);
+    if (root.dataset.motion === 'on') filmVideo.play().catch(() => {});
   }
 
   function updateProfilePreview() {
@@ -394,7 +423,7 @@ function mount(root, component) {
     const actions = node('div', 'output-actions');
     actions.append(
       button('Save plan ↓', 'button primary', () => download(planText(plan, result.source), 'coachbot-session.txt')),
-      button('Review Lab', 'button ghost', () => $('#review').showModal()),
+      button('Review Lab', 'button ghost', () => openDialog($('#review'))),
     );
     top.append(actions);
     const run = data.runs.find(item => item.id === result.id);
@@ -532,7 +561,21 @@ function mount(root, component) {
   const caseCaption = $('.case-caption');
   const scenarioGrid = $('#scenario-grid');
 
-  for (const scene of Object.values(PLAYBOOK_SCENES)) {
+  for (const [label, scene] of Object.entries(PLAYBOOK_SCENES)) {
+    const featuredPicture = node('div', 'hero-shot');
+    featuredPicture.dataset.film = scene;
+    featuredPicture.dataset.active = String(scene === featuredScene);
+    heroFilms.append(featuredPicture);
+    const choice = button(label, '', () => {
+      featuredScene = scene;
+      hero.dataset.scene = scene;
+      for (const frame of heroFilms.children) frame.dataset.active = String(frame.dataset.film === scene);
+      for (const item of heroPicker.children) item.setAttribute('aria-pressed', String(item === choice));
+      filmPlayer.refresh();
+    });
+    choice.setAttribute('aria-pressed', String(scene === featuredScene));
+    heroPicker.append(choice);
+
     const stagePicture = node('div', 'mode-picture');
     stagePicture.dataset.film = scene;
     stagePicture.dataset.active = 'false';
@@ -543,6 +586,7 @@ function mount(root, component) {
     casePicture.dataset.active = 'false';
     caseFilm.append(casePicture);
   }
+  hero.dataset.scene = featuredScene;
 
   const filmPlayer = createFilmMotion(root, data.films);
 
@@ -580,6 +624,12 @@ function mount(root, component) {
   sample.addEventListener('change', sourceNote);
   $('#load-example').addEventListener('click', () => loadExample(data.scenarios[0]));
   $('#use-scenario').addEventListener('click', () => loadExample(selectedScenario));
+  $('#watch-hero').addEventListener('click', () => watchFilm(featuredScene, ...FILM_LABELS[featuredScene]));
+  $('#watch-scenario').addEventListener('click', () => watchFilm(SCENARIO_SCENES[selectedScenario.id], selectedScenario.title, selectedScenario.goal));
+  $('#watch-mode').addEventListener('click', () => {
+    const item = data.modes.find(option => option.id === mode);
+    watchFilm(PLAYBOOK_SCENES[item.group], item.title, item.description);
+  });
   scenarioGrid.append(...data.scenarios.map(example => {
     const card = button('', 'scenario', () => previewScenario(example));
     card.dataset.scenario = example.id;
@@ -599,13 +649,23 @@ function mount(root, component) {
   for (const link of root.querySelectorAll('a[href^="#"]')) {
     link.addEventListener('click', event => {
       event.preventDefault();
+      link.closest('dialog')?.close();
       goTo(link.getAttribute('href').slice(1), true);
     });
   }
   for (const open of root.querySelectorAll('[data-open]')) {
-    open.addEventListener('click', () => $('#' + open.dataset.open).showModal());
+    open.addEventListener('click', () => {
+      open.closest('dialog')?.close();
+      openDialog($('#' + open.dataset.open));
+    });
   }
   for (const close of root.querySelectorAll('.modal .close')) close.addEventListener('click', () => close.closest('dialog').close());
+  for (const dialog of root.querySelectorAll('dialog')) dialog.addEventListener('close', filmPlayer.refresh);
+  filmDialog.addEventListener('close', () => {
+    filmVideo.pause();
+    filmVideo.removeAttribute('src');
+    filmVideo.load();
+  });
   keyForm.addEventListener('submit', event => {
     event.preventDefault();
     if (settingsPending) return;

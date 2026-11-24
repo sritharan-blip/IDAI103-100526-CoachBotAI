@@ -32,13 +32,15 @@ Open the local URL shown in the terminal. The sample workflow runs without crede
 
 | Screen | What to try |
 | --- | --- |
-| [Landing screen](docs/screenshots/home.jpg) | Pause or play the live animated background, then open an example. |
+| [Landing screen](docs/screenshots/home.jpg) | Switch between four sports clips, open a clip in the player, or start with an example. |
 | [Scenario gallery](docs/screenshots/scenarios.jpg) | Preview a midfielder, fast bowler, badminton doubles player, or point guard. Choose **Use this scenario** to load the selected profile. |
 | [Coaching Playbook](docs/screenshots/playbook.jpg) | Browse 13 modes across four animated scenes, then continue to the athlete profile. |
 | [Sample plan](docs/screenshots/plan.jpg) | Generate a plan, check off steps as you go, then download it or open Review Lab. |
 | [Readiness check](docs/screenshots/readiness.jpg) | Run the fast-bowler case and see the local check-in checklist. |
 | [Review Lab](docs/screenshots/review.jpg) | Select two runs, compare the outputs and export run evidence. |
 | [390 px mobile view](docs/screenshots/mobile.jpg) | Use the same profile form and playbook on a narrow screen. |
+
+![A CoachBot session with the progress bar and a completed step](docs/screenshots/plan.jpg)
 
 ![CoachBot Coaching Playbook showing the animated training preview and mode index](docs/screenshots/playbook.jpg)
 
@@ -120,7 +122,7 @@ Browser checks on the public deployment cover the scenario previews, sample gene
 - Youth conditioning benefits from matching training intensity and volume to the athlete and allowing regular recovery. That informed the profile's intensity, equipment, goal and recovery inputs. [IOC consensus on youth athletic development](https://doi.org/10.1136/bjsports-2015-094962)
 - The youth resistance training consensus informed the emphasis on supervision, technique and gradual progression. [International consensus on youth resistance training](https://doi.org/10.1136/bjsports-2013-092952)
 - The return-to-training path sends possible concussion and current symptoms to a check-in with an adult or healthcare professional. [CDC HEADS UP](https://www.cdc.gov/heads-up/guidelines/returning-to-sports.html)
-- The visual direction draws on oversized typography and layered motion from [Made to Disrupt](https://madetodisrupt.com/). CoachBot uses four bundled sports clips and matching posters for the landing, scenario, and Playbook previews. Motion can be paused and respects the device’s reduced-motion preference.
+- The visual direction draws on oversized typography, scroll reveals, video layering, and overlay interactions from [Made to Disrupt](https://madetodisrupt.com/). CoachBot has its own sports footage, category switcher, and clip player. Preview videos pause outside the viewport and behind open dialogs. The motion control and device reduced-motion setting also pause automatic motion.
 
 ## Streamlit Community Cloud
 
