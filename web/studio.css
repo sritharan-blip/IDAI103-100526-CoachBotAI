@@ -167,15 +167,37 @@ textarea{min-height:58px;resize:vertical}
 .output-context{list-style:none;padding:0;margin:15px 0 0;color:#dbe7ce;font-size:12px;font-weight:650}
 .output-context li{border:1px solid #cde58d38;border-radius:4px;padding:3px 8px;background:#cde58d0d}
 .output-summary{color:#d2dacb;margin:12px 0 20px;max-width:75ch}
-.output-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.session-workspace{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.7fr);align-items:start;gap:clamp(18px,4vw,48px);margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
+.session-overview{position:sticky;top:calc(var(--header-height) + 16px);display:grid;gap:14px;min-width:0}
+.session-overview .output-summary,.session-overview .output-safety{margin:0}
+.session-progress{display:grid;gap:7px;padding:15px;border:1px solid #cde58d38;border-radius:9px;background:#11170f}
+.session-progress h3{font-size:15px}
+.progress-count{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.session-progress progress{width:100%;height:8px;appearance:none;border:0;border-radius:99px;overflow:hidden;background:#364132;color:var(--hot);accent-color:var(--hot)}
+.session-progress progress::-webkit-progress-bar{background:#364132}
+.session-progress progress::-webkit-progress-value{background:var(--hot);transition:width .28s var(--ease)}
+.session-progress progress::-moz-progress-bar{background:var(--hot)}
+.studio[data-motion=off] .session-progress progress::-webkit-progress-value{transition:none}
+.output-grid{display:grid;gap:12px;min-width:0}
 .output-card{border:1px solid #ffffff1c;background:linear-gradient(160deg,#242e1f,#121711 63%);border-radius:9px;padding:clamp(12px,2vw,20px)}
 .output-card h3{font-size:17px;line-height:1.2}
 .output-card ul{padding-left:18px;font-size:14px;color:#e2e7dd;margin:11px 0}
 .output-card li::marker{color:var(--hot)}
 .output-card li+li{margin-top:7px}
 .output-card p{font-size:13px;color:var(--muted)}
+.plan-section{border-left:2px solid #d4f57470}
+.plan-section h3{font-size:clamp(17px,2vw,22px);letter-spacing:-.035em}
+.plan-section .plan-checklist{list-style:none;padding:0}
+.plan-checklist li+li{margin-top:5px}
+.plan-checklist label{display:flex;align-items:flex-start;gap:10px;min-height:42px;padding:8px 10px;border:1px solid #e7efd51c;border-radius:6px;background:#0c130d7d;cursor:pointer}
+.plan-checklist label:hover{border-color:#d4f57467}
+.plan-checklist label:has(input:checked){border-color:#d4f57458;background:#d4f5740f}
+.plan-checklist input{width:16px;height:16px;flex:none;margin:2px 0 0;accent-color:var(--hot);cursor:pointer}
+.plan-checklist label span{color:#e2e7dd;font-size:14px;font-weight:450;line-height:1.42}
+.plan-checklist input:checked+span{color:#b8c6a7}
 .output-safety{font-size:13px;color:#edf6dc;background:#d4f57413;border-left:2px solid var(--hot);margin-top:16px;padding:10px 13px;border-radius:0 7px 7px 0}
 .output-safety strong{display:block;margin-bottom:3px}
+.output:is([data-source="Safety check"],[data-source="Restrictions checklist"]) :is(.output-safety,.plan-section){border-left-color:#ffd598}
 .output .button{min-height:40px}
 .footer{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-block:20px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 .footer>span:first-child{color:var(--text);font-weight:800;white-space:nowrap}
@@ -287,7 +309,8 @@ textarea{min-height:58px;resize:vertical}
   .profile-intro{position:static}
   .profile-intro>p{margin-top:11px}
   .output-top{flex-wrap:wrap}
-  .output-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .session-workspace{grid-template-columns:minmax(0,1fr)}
+  .session-overview{position:static}
   .section-heading{flex-direction:column;align-items:start;gap:10px}
   .studio{--header-height:98px}
   .topbar-inner{grid-template-columns:1fr auto;grid-template-rows:58px 39px;gap:0 6px}
@@ -322,7 +345,7 @@ textarea{min-height:58px;resize:vertical}
   .panel{padding:15px;border-radius:9px}
   .fields{gap:9px}
   :is(.profile,.modal) :is(input:not([type=checkbox]),select,textarea){font-size:16px}
-  .output-grid,.compare-controls,.compare-results{grid-template-columns:1fr}
+  .compare-controls,.compare-results{grid-template-columns:1fr}
   .output-actions{flex:none;max-width:100%}
   .footer{flex-wrap:wrap;gap:7px 12px}
   .footer>span:nth-child(2){order:3;width:100%}

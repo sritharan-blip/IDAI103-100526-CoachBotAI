@@ -406,18 +406,55 @@ function mount(root, component) {
       for (const label of labels) context.append(node('li', '', label));
       output.append(context);
     }
-    output.append(node('p', 'output-summary', plan.summary));
+
+    const guidanceOnly = ['Safety check', 'Restrictions checklist'].includes(result.source);
+    const workspace = node('div', 'session-workspace');
+    const overview = node('div', 'session-overview');
+    overview.append(node('p', 'output-summary', plan.summary));
+
     const grid = node('div', 'output-grid');
-    for (const section of plan.sections) {
-      const card = node('article', 'output-card');
-      const list = node('ul');
-      list.append(...section.steps.map(step => node('li', '', step)));
-      card.append(node('h3', '', section.heading), list, node('p', '', section.why));
-      grid.append(card);
+    if (!guidanceOnly) {
+      const stepCount = plan.sections.reduce((count, section) => count + section.steps.length, 0);
+      const stepProgress = node('progress');
+      stepProgress.max = stepCount;
+      stepProgress.setAttribute('aria-label', 'Session progress');
+      const progressCount = node('p', 'progress-count');
+      function updateProgress() {
+        const checked = grid.querySelectorAll('input:checked').length;
+        stepProgress.value = checked;
+        progressCount.textContent = `${checked} of ${stepCount} steps complete`;
+      }
+      const tracker = node('div', 'session-progress');
+      tracker.append(node('h3', '', 'Session progress'), stepProgress, progressCount);
+      overview.append(tracker);
+      grid.addEventListener('change', updateProgress);
+      updateProgress();
     }
     const safety = node('div', 'output-safety');
     safety.append(node('strong', '', 'Safety note'), node('p', '', plan.safety));
-    output.append(grid, safety);
+    overview.append(safety);
+
+    for (const section of plan.sections) {
+      const card = node('article', 'output-card plan-section');
+      const list = node('ul', guidanceOnly ? '' : 'plan-checklist');
+      for (const step of section.steps) {
+        const item = node('li');
+        if (guidanceOnly) {
+          item.textContent = step;
+        } else {
+          const check = node('input');
+          check.type = 'checkbox';
+          const label = node('label');
+          label.append(check, node('span', '', step));
+          item.append(label);
+        }
+        list.append(item);
+      }
+      card.append(node('h3', '', section.heading), list, node('p', '', section.why));
+      grid.append(card);
+    }
+    workspace.append(overview, grid);
+    output.append(workspace);
   }
 
   function renderRuns() {
