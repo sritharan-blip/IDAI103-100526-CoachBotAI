@@ -1,101 +1,109 @@
 # CoachBot AI
 
-![Animated CoachBot AI banner with a sprinter and moving track lines](docs/coachbot-banner.gif)
+[![Animated CoachBot AI banner featuring four sports clips and the app’s black-and-lime palette](docs/coachbot-banner.gif)](https://coachbotai.streamlit.app/)
 
-**CRS Artificial Intelligence · Generative AI Summative Assessment 3 · Scenario 2**  
-Sritharan N S · Jain Vidyalaya IB World School
+CoachBot turns a fictional athlete’s sport, position, goal, and available equipment into a coaching plan with practical steps. The training studio covers **6 sports, 26 positions, and 13 coaching modes**.
 
-[Open CoachBot](https://coachbotai.streamlit.app/) · [Try the demo](#try-the-demo) · [Run locally](#run-locally) · [Model setup](#model-configuration-and-comparison) · [Storyboard PDF](docs/CoachBot_AI_Storyboard.pdf)
+**Sritharan N S · Jain Vidyalaya IB World School**  
+CRS Artificial Intelligence · Generative AI Summative Assessment 3 · Scenario 2
 
-CoachBot turns a fictional athlete's sport, position, goal and available equipment into a coaching session. The prototype covers **six sports, 26 positions and 13 coaching modes**. Browse the video previews, work through the generated steps, and compare your runs in Review Lab.
+[Open the live app](https://coachbotai.streamlit.app/) · [See the screenshots](#screenshots) · [Run locally](#run-locally) · [Read the assessment storyboard](docs/CoachBot_AI_Storyboard.pdf)
 
 ## Try the demo
 
-1. Open the [public Streamlit app](https://coachbotai.streamlit.app/) and choose **Try an example**. CoachBot fills in a football midfielder's profile and stamina goal.
-2. Select **Generate session**. Check off individual steps as you read through the plan. **Save plan** downloads a text copy.
-3. Open **Scenarios**, select **Bowler readiness check**, and choose **Use this scenario**. Generate a second run. **Review Lab** shows the two outputs side by side and exports run evidence as JSON.
+1. Choose **Try an example**. CoachBot fills in a football midfielder’s profile and the late-match stamina goal.
+2. Select **Generate session**. Check off a step to update the progress bar or choose **Save plan** for a text copy.
+3. Open **Scenarios**, select **Bowler readiness check**, and choose **Use this scenario**. Generate the readiness result. Open **Review Lab** to compare the two runs and export evidence as JSON.
 
-The public demo generates built-in sample plans. Its source labels distinguish sample plans, safety checks, and restrictions checklists.
+The public classroom app uses built-in sample plans and includes the local readiness checks. Each result shows its source. Review Lab retains up to 12 runs in the current session, and step checkmarks belong to the plan currently on screen.
+
+## Screenshots
+
+These captures show the current Streamlit app using fictional profiles. Select an image to see it at full size.
+
+<table>
+  <tr>
+    <td width="50%"><strong>Training studio</strong><br>Switch sports clips or start a session.<br><a href="docs/screenshots/home.jpg"><img src="docs/screenshots/home.jpg" alt="CoachBot landing page with the Game IQ video preview selected"></a></td>
+    <td width="50%"><strong>Scenario gallery</strong><br>Preview an athlete and goal before loading the case.<br><a href="docs/screenshots/scenarios.jpg"><img src="docs/screenshots/scenarios.jpg" alt="Scenario gallery with the Tournament fuel case selected"></a></td>
+  </tr>
+  <tr>
+    <td><strong>Coaching Playbook</strong><br>Filter modes by category and preview the selected mode.<br><a href="docs/screenshots/playbook.jpg"><img src="docs/screenshots/playbook.jpg" alt="Game IQ mode filter with Technique drills selected"></a></td>
+    <td><strong>Athlete profile</strong><br>See the session preview alongside the athlete and goal fields.<br><a href="docs/screenshots/builder.jpg"><img src="docs/screenshots/builder.jpg" alt="Football midfielder profile loaded with the late-match stamina goal"></a></td>
+  </tr>
+  <tr>
+    <td><strong>Generated session</strong><br>Work through the checklist and track progress.<br><a href="docs/screenshots/plan.jpg"><img src="docs/screenshots/plan.jpg" alt="Stamina builder sample plan with one of seven steps completed"></a></td>
+    <td><strong>Readiness guidance</strong><br>See the local check-in response for the fictional fast-bowler case.<br><a href="docs/screenshots/readiness.jpg"><img src="docs/screenshots/readiness.jpg" alt="Safety check result titled Pause training and check in"></a></td>
+  </tr>
+  <tr>
+    <td valign="top"><strong>Review Lab</strong><br>Compare the sample plan and the readiness result side by side.<br><a href="docs/screenshots/review.jpg"><img src="docs/screenshots/review.jpg" alt="Review Lab comparing a safety check with a stamina sample plan"></a></td>
+    <td valign="top"><strong>Mobile · 390 px</strong><br>The landing page, clip controls, and menu fit a phone viewport.<br><a href="docs/screenshots/mobile.jpg"><img src="docs/screenshots/mobile.jpg" width="150" alt="CoachBot landing page at 390 pixels wide"></a></td>
+  </tr>
+</table>
+
+## Coaching Playbook
+
+| Category | Modes |
+| --- | --- |
+| Training | Position workout, Stamina builder, Warm-up & cooldown, Small-space practice |
+| Recovery | Return to training, Mobility routine |
+| Game IQ | Tactical playbook, Technique drills, Match-day mindset, Decision rehearsal, Practice debrief |
+| Fuel | Sports nutrition, Hydration routine |
+
+Sports include football, cricket, basketball, athletics, volleyball, and badminton. The position catalog, mode instructions, and sample templates are in [coach.py](coach.py).
+
+## How it works
+
+```mermaid
+flowchart TD
+  profile["Athlete profile and coaching mode"] --> check["Validate profile and check readiness"]
+  check -->|"Symptoms or restrictions"| safety["Local check-in guidance"]
+  check -->|"Sample mode"| sample["Build a plan from templates"]
+  check -->|"Private Gemini mode"| gemini["Request and validate structured JSON"]
+  safety --> result["Show result and source"]
+  sample --> result
+  gemini --> result
+  result --> review["Review Lab and evidence export"]
+```
+
+The readiness check runs before model selection. For the private Gemini demo, CoachBot validates the returned title, summary, steps, and safety note. An eligible provider error can trigger one retry with a distinct backup key.
+
+| Source | Purpose |
+| --- | --- |
+| [app.py](app.py) | Streamlit entry point, component events, model settings, and session history |
+| [coach.py](coach.py) | Profile validation, readiness rules, sample templates, and Gemini calls |
+| [styles.css](styles.css) | Editable color and type tokens, Streamlit shell styles, and responsive component styles |
+| [web/](web/) | Interface markup and interactions for previews, profiles, plans, and Review Lab |
+| [static/](static/) | Four sports clips and their poster frames |
+| [.streamlit/config.toml](.streamlit/config.toml) | Dark theme and static media serving |
+| [tests/](tests/) | Coaching logic, mocked provider responses, and Streamlit session tests |
 
 ## Run locally
 
-Install Python, then run these commands from the repository folder. On Windows, you can also double-click `Launch-CoachBot.cmd` after installing the requirements.
+Install Python, then run these commands from the repository folder.
 
 ```bash
 python -m pip install -r requirements.txt
 python -m streamlit run app.py --server.address 127.0.0.1
 ```
 
-Open the local URL shown in the terminal. The sample workflow runs without credentials. Review Lab keeps up to 12 runs in the current session. Step checkmarks belong to the open plan and reset when you generate another one.
+Open the local URL shown in the terminal. On Windows, [Launch-CoachBot.cmd](Launch-CoachBot.cmd) also starts the app after the requirements are installed. The sample workflow is ready to use on startup.
 
-## App walkthrough
+For Streamlit Community Cloud, deploy `app.py` from `main`. The public app uses the default sample-mode configuration. [Live CoachBot app](https://coachbotai.streamlit.app/)
 
-| Screen | What to try |
+## Private Gemini demo
+
+Google’s Gemini API terms limit API use to adults and restrict use in apps directed at under-18s. Live integration is intended for a private, adult-operated assessment demo with fictional profiles. [Gemini API Additional Terms](https://aistudio.google.com/docs/terms#age-requirements)
+
+1. Use [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example) as a template and set `COACHBOT_ADULT_DEMO = "true"` for the private demo. Place the settings in the ignored `.streamlit/secrets.toml` file locally or in the private app’s Streamlit Cloud Secrets.
+2. Create the key in [Google AI Studio](https://aistudio.google.com/api-keys). Save it as `GEMINI_API_KEY` in Secrets or enter it in **Model settings** for the current browser session. `GEMINI_API_KEY_BACKUP` is optional and takes a distinct key.
+3. Choose **Test Gemini**. CoachBot sends a built-in fictional football profile. A successful response shows **Gemini · Primary** or **Gemini · Backup**, the model, and elapsed time.
+
+| Model in the configuration | Review Lab comparison control |
 | --- | --- |
-| [Landing screen](docs/screenshots/home.jpg) | Switch between four sports clips, open a clip in the player, or start with an example. |
-| [Scenario gallery](docs/screenshots/scenarios.jpg) | Preview a midfielder, fast bowler, badminton doubles player, or point guard. Choose **Use this scenario** to load the selected profile. |
-| [Coaching Playbook](docs/screenshots/playbook.jpg) | Browse 13 modes across four animated scenes, then continue to the athlete profile. |
-| [Sample plan](docs/screenshots/plan.jpg) | Generate a plan, check off steps as you go, then download it or open Review Lab. |
-| [Readiness check](docs/screenshots/readiness.jpg) | Run the fast-bowler case and see the local check-in checklist. |
-| [Review Lab](docs/screenshots/review.jpg) | Select two runs, compare the outputs and export run evidence. |
-| [390 px mobile view](docs/screenshots/mobile.jpg) | Use the same profile form and playbook on a narrow screen. |
+| `gemini-3.8-flash` (default) | Low or medium reasoning |
+| `gemini-2.5-flash-lite` | Temperature 0.3, 0.5, or 0.7 with top-p set to 0.9 |
 
-![CoachBot's live landing page showing the Game IQ sports clip and the four-category selector](docs/screenshots/home.jpg)
-
-![A CoachBot session with the progress bar and a completed step](docs/screenshots/plan.jpg)
-
-## Coaching playbook
-
-| Mode | Prompt task |
-| --- | --- |
-| Position workout | Build a session with role-specific work, warm-up, cooldown and rest. |
-| Stamina builder | Match conditioning and recovery intervals to the demands of the position. |
-| Warm-up & cooldown | Suggest progressive preparation and a gradual finish for the sport. |
-| Return to training | Give a coach discussion checklist for resuming a routine after a break. |
-| Mobility routine | Suggest comfortable movement for a healthy athlete. |
-| Tactical playbook | Describe a role-specific scenario, the cues to read and a decision to practise. |
-| Technique drills | Give two progressive drills with an observable cue for each. |
-| Match-day mindset | Write a short visualization, a process goal and a reset cue. |
-| Sports nutrition | Suggest flexible food ideas respecting diet and stated allergies. |
-| Hydration routine | Plan water breaks and coach-led adjustments for heat. |
-| Small-space practice | Use limited space and listed equipment. Include a no-equipment alternative. |
-| Decision rehearsal | Practise two position-specific if-then decisions and an example where the other option fits. |
-| Practice debrief | Choose an observable success measure, a feedback question and one adjustment. |
-
-The exact prompts and sample templates are in [coach.py](coach.py). The six sports are football, cricket, basketball, athletics, volleyball and badminton, with 26 listed positions or disciplines.
-
-## From athlete profile to plan
-
-```mermaid
-flowchart TD
-  profile["Athlete profile and coaching mode"] --> validate["Validate input and check readiness"]
-  validate -->|"Symptoms or restrictions"| safety["Local check-in guidance"]
-  validate -->|"Sample mode"| sample["Build plan from templates"]
-  validate -->|"Private Gemini mode"| live["Request and validate structured JSON"]
-  safety --> result["Result with source label"]
-  sample --> result
-  live --> result
-  result --> review["Review Lab and evidence export"]
-```
-
-- [app.py](app.py) passes the Streamlit form event to the coach logic and keeps the results for the current session.
-- [coach.py](coach.py) validates athlete inputs, applies the local readiness checks, builds sample plans, and validates Gemini responses. An eligible provider error can trigger one retry with a distinct backup key.
-- [web/](web/) contains the responsive interface. [static/](static/) contains the four sports clips and their poster frames. [tests/](tests/) exercises the coaching logic and Streamlit events.
-
-## Model configuration and comparison
-
-The ordinary installation starts in sample mode. Google limits Gemini API use to adults and restricts its use in apps directed toward people under 18. Use live integration in a private, adult-operated assessment demo with fictional profiles. Keep the public classroom demo in sample mode. [Gemini API Additional Terms](https://aistudio.google.com/docs/terms#age-requirements)
-
-1. In a private demo, use [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example) as a template and set `COACHBOT_ADULT_DEMO = "true"`. For local use, save the settings to the ignored `.streamlit/secrets.toml` file. For a private Cloud deployment, use the app's Secrets settings.
-2. The adult operator creates a key in [Google AI Studio](https://aistudio.google.com/api-keys). Save it as `GEMINI_API_KEY` in Secrets for the deployment, or paste it into **Model settings** for a single session. A distinct `GEMINI_API_KEY_BACKUP` is optional. Keep actual keys out of Git, screenshots, and hand-ins.
-3. Open **Model settings** and choose **Test Gemini**. The app sends a built-in fictional football profile. A successful plan displays **Gemini · Primary** or **Gemini · Backup**, plus the model and elapsed time.
-
-| Configured model | Comparison control in Review Lab |
-| --- | --- |
-| `gemini-3.8-flash` (default) | Low versus medium reasoning. Google deprecated sampling controls for this model. |
-| `gemini-2.5-flash-lite` | Temperature 0.3, 0.5, or 0.7, with top-p fixed at 0.9. |
-
-The assessment names Gemini 1.5. This build uses currently listed models. For a comparison, keep the same fictional profile and coaching mode, change one setting in **Review Lab**, and assess position relevance, clarity, and whether the output follows the selected constraints. The result cards show the source, model setting, and runtime. [Gemini model reference](https://aistudio.google.com/docs/models) · [Gemini 3.8 migration notes](https://aistudio.google.com/docs/whats-new-gemini-3.8#migrate-to-gemini-3-8-flash)
+For an assessment comparison, keep the fictional profile and mode fixed, change one supported setting, and compare how well each result fits the position and the stated constraints. [Gemini model reference](https://aistudio.google.com/docs/models)
 
 ## Validation
 
@@ -103,25 +111,12 @@ The assessment names Gemini 1.5. This build uses currently listed models. For a 
 python -m unittest discover -s tests -v
 ```
 
-| Scenario | Evidence in the tests |
-| --- | --- |
-| All 13 modes across 26 positions | Each of the 338 combinations returns a valid sample with the selected position. |
-| Multiple injuries, recent injury in a goal, clinician restrictions | The server returns the appropriate local response without contacting Gemini. |
-| Invalid sport and position combination or missing restrictions | Input validation returns a specific message. |
-| Key failure, quota limit or service error | Mocked HTTP responses exercise retry with the backup, backup-only operation, and avoiding repeat calls with the same key. |
-| Reasoning and temperature settings | The outgoing request uses settings supported by the configured model. |
-| Incomplete JSON | The app handles a response that is missing required fields. |
-| Streamlit form and Model settings events | The tests submit the component events, check the sample result, simulate a private backup-key run, and clear the session keys. |
+The automated suite covers all **338 position-and-mode combinations** in sample mode, invalid inputs, readiness routing, Gemini response validation, backup-key retries, and Streamlit session events. The screenshots document the live sample workflow, the readiness result, run comparison, and the 390 px layout. Provider responses in the tests are mocked. **Test Gemini** checks provider access in the private demo.
 
-Browser checks on the public deployment cover the scenario previews, sample generation, readiness guidance, and the mobile layout at 390 px. The automated tests simulate Gemini responses and backup-key errors. To verify provider access and the quality of a fresh response, run **Test Gemini** in the private demo.
+## Design and research
 
-## Research and design
+The editorial theme uses Space Grotesk headlines, Inter body text, a near-black canvas, and one lime accent. Edit `--cb-accent` at the top of [styles.css](styles.css) to change the UI accent. The app includes a pause control and honors the device’s reduced-motion preference. The animated banner uses the same four clips as the app. [Design reference](https://madetodisrupt.com/)
 
-- Youth conditioning benefits from matching training intensity and volume to the athlete and allowing regular recovery. That informed the profile's intensity, equipment, goal and recovery inputs. [IOC consensus on youth athletic development](https://doi.org/10.1136/bjsports-2015-094962)
-- The youth resistance training consensus informed the emphasis on supervision, technique and gradual progression. [International consensus on youth resistance training](https://doi.org/10.1136/bjsports-2013-092952)
-- The return-to-training path sends possible concussion and current symptoms to a check-in with an adult or healthcare professional. [CDC HEADS UP](https://www.cdc.gov/heads-up/guidelines/returning-to-sports.html)
-- The visual direction draws on oversized typography, scroll reveals, video layering, and overlay interactions from [Made to Disrupt](https://madetodisrupt.com/). CoachBot has its own sports footage, category switcher, and clip player. Preview videos pause outside the viewport and behind open dialogs. The motion control and device reduced-motion setting also pause automatic motion.
-
-## Streamlit Community Cloud
-
-Deploy `app.py` from `main`. The app loads its interface from `web/` and serves its video previews and posters from `static/` through the settings in `.streamlit/config.toml`. The public demo runs with the default sample-mode configuration. [Streamlit deployment and secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management)
+- Training intensity, recovery, and supervision informed the athlete profile and coaching prompts. [IOC consensus on youth athletic development](https://doi.org/10.1136/bjsports-2015-094962)
+- The training templates emphasize supervised, age-appropriate progression. [Youth resistance training consensus](https://doi.org/10.1136/bjsports-2013-092952)
+- A possible concussion in a fictional profile triggers a local check-in response. [CDC HEADS UP](https://www.cdc.gov/heads-up/guidelines/returning-to-sports.html)
