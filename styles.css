@@ -545,12 +545,6 @@ nav a:hover,nav button:hover {
   transition: background .24s,color .24s,border-color .24s,transform .24s var(--ease);
   white-space: nowrap;
 }
-.button:hover {
-  transform: translateY(-2px);
-}
-.button:active {
-  transform: translateY(0);
-}
 .button.primary {
   background: var(--hot);
   color: var(--cb-on-accent);
@@ -769,7 +763,6 @@ nav a:hover,nav button:hover {
 .scenario:hover {
   background: var(--cb-raised);
   border-color: var(--cb-line-strong);
-  transform: translateY(-2px);
 }
 .scenario[aria-pressed=true] {
   background: var(--cb-raised);
@@ -1783,6 +1776,117 @@ textarea {
 }
 .sport-inner>.eyebrow {
   color: var(--cb-secondary);
+}
+
+/* Pointer proximity, keyboard focus, and touch feedback */
+.studio[data-motion=on] :is(button:not(:disabled), a[href], select:not(:disabled),
+  textarea:not(:disabled), input:not(:disabled, [type=hidden], [type=checkbox]),
+  summary, .source-control, .plan-checklist label) {
+  --cb-near: 0;
+  --cb-control-lift: var(--cb-near);
+  translate: 0 calc(-4px * var(--cb-control-lift));
+  scale: calc(1 + .035 * var(--cb-control-lift));
+  transition: translate .26s var(--ease), scale .26s var(--ease),
+    background-color .22s, border-color .22s, color .22s, box-shadow .22s;
+}
+.studio[data-motion=on] :is(button:not(:disabled), a[href], select:not(:disabled),
+  textarea:not(:disabled), input:not(:disabled, [type=hidden], [type=checkbox]),
+  summary):focus-visible,
+.studio[data-motion=on] :is(.source-control, .plan-checklist label):has(:focus-visible) {
+  --cb-control-lift: 1;
+}
+.studio[data-motion=on] :is(button:not(:disabled), a[href], summary,
+  .source-control, .plan-checklist label):active {
+  translate: 0 0;
+  scale: .985;
+  transition-duration: .12s;
+}
+
+/* Zoom the footage inside its frame so the captions and controls stay put. */
+.studio[data-motion=on] :is(.hero-screen, .case-preview, .mode-stage, .film-dialog video, img) {
+  --cb-near: 0;
+  --cb-image-zoom: var(--cb-near);
+}
+.studio[data-motion=on] :is(.hero-screen .hero-shot, .case-preview .case-film, .mode-stage .mode-visual) {
+  scale: calc(1 + .055 * var(--cb-image-zoom));
+  transition: opacity .6s var(--ease), scale .40s var(--ease);
+}
+.studio[data-motion=on] :is(.film-dialog video, img) {
+  scale: calc(1 + .025 * var(--cb-image-zoom));
+  transition: scale .34s var(--ease);
+}
+@media (any-hover: hover) {
+  .studio[data-motion=on] :is(button:not(:disabled), a[href], select:not(:disabled),
+    textarea:not(:disabled), input:not(:disabled, [type=hidden], [type=checkbox]),
+    summary, .source-control, .plan-checklist label):hover {
+    --cb-control-lift: 1;
+  }
+  .studio[data-motion=on] :is(.hero-screen, .case-preview, .mode-stage, .film-dialog video, img):hover {
+    --cb-image-zoom: 1;
+  }
+}
+
+/* Animate the actual select options where the browser supports CSS pickers. */
+@supports (appearance: base-select) and selector(select::picker(select)) {
+  .studio select,
+  .studio select::picker(select) {
+    appearance: base-select;
+  }
+  .studio select {
+    background-image: none;
+    padding-inline-end: 11px;
+  }
+  .studio select::picker(select) {
+    margin-block-start: 5px;
+    max-height: 45vh;
+    border: 1px solid var(--cb-line-strong);
+    border-radius: 6px;
+    padding: 3px;
+    background: var(--cb-panel);
+    color: var(--cb-text);
+    box-shadow: 0 12px 30px var(--cb-scrim);
+  }
+  .studio select::picker-icon {
+    color: var(--cb-secondary);
+  }
+  .studio select option {
+    min-height: 37px;
+    padding: 7px 10px;
+    border-radius: 4px;
+  }
+  .studio select option:is(:hover, :focus-visible) {
+    background: var(--cb-raised);
+    color: var(--cb-text);
+  }
+  .studio select option:checked {
+    color: var(--cb-accent);
+  }
+  .studio[data-motion=on] select option {
+    transition: background-color .20s, color .20s, translate .20s var(--ease);
+  }
+  .studio[data-motion=on] select option:has(+ option:hover),
+  .studio[data-motion=on] select option:hover + option {
+    translate: 1px 0;
+  }
+  .studio[data-motion=on] select option:is(:hover, :focus-visible) {
+    translate: 2px 0;
+  }
+  .studio[data-motion=on] select::picker(select) {
+    opacity: 0;
+    translate: 0 -5px;
+    transition: opacity .20s, translate .24s var(--ease),
+      display .24s allow-discrete, overlay .24s allow-discrete;
+  }
+  .studio[data-motion=on] select:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @starting-style {
+    .studio[data-motion=on] select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -5px;
+    }
+  }
 }
 
 /* Responsive layouts */

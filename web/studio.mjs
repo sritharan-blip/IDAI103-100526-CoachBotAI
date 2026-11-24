@@ -52,6 +52,81 @@ function listOptions(select, options, value) {
   if (options.includes(value)) select.value = value;
 }
 
+function createProximityMotion(root) {
+  const targets = 'button:not(:disabled), a[href], select:not(:disabled), textarea:not(:disabled), '
+    + 'input:not(:disabled, [type=hidden], [type=checkbox]), summary, .source-control, .plan-checklist label, '
+    + '.hero-screen, .case-preview, .mode-stage, .film-dialog video, img';
+  const radius = 42;
+  const controller = new AbortController();
+  const {signal} = controller;
+  let active = new Map();
+  let point = null;
+  let frame = 0;
+
+  function paint() {
+    frame = 0;
+    const next = new Map();
+    if (point && root.dataset.motion === 'on' && !document.hidden) {
+      const area = root.querySelector('dialog[open]') || root;
+      const scrollBounds = new Map();
+      // Read all geometry before applying any styles.
+      for (const element of area.querySelectorAll(targets)) {
+        let {left, right, top, bottom} = element.getBoundingClientRect();
+        const rail = element.closest('.mode-list, .sport-list');
+        if (rail) {
+          if (!scrollBounds.has(rail)) scrollBounds.set(rail, rail.getBoundingClientRect());
+          const bounds = scrollBounds.get(rail);
+          left = Math.max(left, bounds.left);
+          right = Math.min(right, bounds.right);
+          top = Math.max(top, bounds.top);
+          bottom = Math.min(bottom, bounds.bottom);
+        }
+        if (right <= left || bottom <= top) continue;
+        const distance = Math.hypot(Math.max(left - point.x, 0, point.x - right),
+          Math.max(top - point.y, 0, point.y - bottom));
+        if (distance < radius) next.set(element, (1 - distance / radius).toFixed(2));
+      }
+    }
+    for (const element of active.keys()) {
+      if (!next.has(element)) element.style.removeProperty('--cb-near');
+    }
+    for (const [element, value] of next) {
+      if (active.get(element) !== value) element.style.setProperty('--cb-near', value);
+    }
+    active = next;
+  }
+
+  function schedule() {
+    if (!frame && (point || active.size)) frame = requestAnimationFrame(paint);
+  }
+
+  function clearPointer() {
+    point = null;
+    schedule();
+  }
+
+  root.addEventListener('pointermove', event => {
+    if (event.pointerType === 'touch') {
+      clearPointer();
+      return;
+    }
+    point = {x: event.clientX, y: event.clientY};
+    schedule();
+  }, {passive: true, signal});
+  root.addEventListener('pointerleave', clearPointer, {signal});
+  root.addEventListener('click', schedule, {signal});
+  document.addEventListener('scroll', schedule, {capture: true, passive: true, signal});
+  document.addEventListener('visibilitychange', clearPointer, {signal});
+  window.addEventListener('resize', schedule, {signal});
+  window.addEventListener('blur', clearPointer, {signal});
+
+  return () => {
+    controller.abort();
+    cancelAnimationFrame(frame);
+    for (const element of active.keys()) element.style.removeProperty('--cb-near');
+  };
+}
+
 function createFilmMotion(root, films) {
   const hero = root.querySelector('.hero');
   const toggle = root.querySelector('.motion-toggle');
@@ -589,6 +664,7 @@ function mount(root, component) {
   hero.dataset.scene = featuredScene;
 
   const filmPlayer = createFilmMotion(root, data.films);
+  const disposeProximity = createProximityMotion(root);
 
   function previewScenario(example) {
     selectedScenario = example;
@@ -715,6 +791,7 @@ function mount(root, component) {
   return {
     dispose() {
       filmPlayer.dispose();
+      disposeProximity();
       copyAnimation?.cancel();
     },
     update(next) {
