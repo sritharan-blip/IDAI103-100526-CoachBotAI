@@ -127,7 +127,7 @@ function createProximityMotion(root) {
   };
 }
 
-function createFilmMotion(root, films) {
+function createFilmMotion(root, films, advanceFeatured) {
   const hero = root.querySelector('.hero');
   const toggle = root.querySelector('.motion-toggle');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -136,41 +136,80 @@ function createFilmMotion(root, films) {
   const visible = new Set();
   let paused = false;
   let frame = 0;
+  let fallbackClip = null;
+  let fallbackTimer = 0;
+
+  function canPlay({host}) {
+    return !signal.aborted && root.dataset.motion === 'on' && !document.hidden && !root.querySelector('dialog[open]')
+      && visible.has(host) && host.dataset.active === 'true';
+  }
+
+  function clearFallback(clip) {
+    if (fallbackClip !== clip) return;
+    clearTimeout(fallbackTimer);
+    fallbackClip = null;
+  }
+
+  function scheduleFallback(clip) {
+    if (!clip.featured || !canPlay(clip) || fallbackClip === clip) return;
+    clearFallback(fallbackClip);
+    fallbackClip = clip;
+    fallbackTimer = setTimeout(() => {
+      clearFallback(clip);
+      if (canPlay(clip)) advanceFeatured();
+    }, 6000);
+  }
 
   const clips = [...root.querySelectorAll('[data-film]')].map(host => {
     const film = films[host.dataset.film];
+    const clip = {host, featured: host.classList.contains('hero-shot'), source: film?.video};
     if (film?.poster) host.style.backgroundImage = `url("${film.poster}")`;
-    if (!film?.video) return {host};
+    if (!clip.source) return clip;
     const video = node('video', 'film-media');
     video.muted = true;
     video.defaultMuted = true;
-    video.loop = true;
+    video.loop = !clip.featured;
     video.playsInline = true;
     video.preload = 'none';
     video.setAttribute('aria-hidden', 'true');
-    video.addEventListener('playing', () => { host.dataset.playing = 'true'; }, {signal});
-    video.addEventListener('error', () => { delete host.dataset.playing; }, {signal});
+    video.addEventListener('playing', () => {
+      host.dataset.playing = 'true';
+      clearFallback(clip);
+    }, {signal});
+    video.addEventListener('waiting', () => scheduleFallback(clip), {signal});
+    video.addEventListener('error', () => {
+      delete host.dataset.playing;
+      scheduleFallback(clip);
+    }, {signal});
+    if (clip.featured) {
+      video.addEventListener('ended', () => {
+        if (canPlay(clip)) advanceFeatured();
+      }, {signal});
+    }
     host.append(video);
-    return {host, video, source: film.video};
+    clip.video = video;
+    return clip;
   });
 
   function refresh() {
     const motion = !paused && !reduced.matches;
-    const unobstructed = motion && !document.hidden && !root.querySelector('dialog[open]');
     const label = motion ? 'Pause motion' : 'Play motion';
     root.dataset.motion = motion ? 'on' : 'off';
     toggle.hidden = reduced.matches;
     toggle.setAttribute('aria-label', label);
     toggle.title = label;
     toggle.firstElementChild.textContent = motion ? 'Ⅱ' : '▶';
-    for (const {host, video, source} of clips) {
-      if (!video) continue;
-      if (!unobstructed || !visible.has(host) || host.dataset.active === 'false') {
-        video.pause();
+    for (const clip of clips) {
+      const {video, source} = clip;
+      if (!canPlay(clip)) {
+        clearFallback(clip);
+        if (video && !video.paused) video.pause();
         continue;
       }
+      if (!video || video.paused || video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) scheduleFallback(clip);
+      if (!video) continue;
       if (!video.src) video.src = source;
-      if (video.paused) video.play().catch(() => {});
+      if (video.paused) video.play().catch(() => scheduleFallback(clip));
     }
     updateScroll();
   }
@@ -196,7 +235,7 @@ function createFilmMotion(root, films) {
     }
     refresh();
   }, {threshold: .12});
-  for (const {host, video} of clips) if (video) screen.observe(host);
+  for (const {host, video, featured} of clips) if (video || featured) screen.observe(host);
 
   const chapters = new IntersectionObserver(entries => {
     for (const entry of entries) {
@@ -219,6 +258,7 @@ function createFilmMotion(root, films) {
       screen.disconnect();
       chapters.disconnect();
       cancelAnimationFrame(frame);
+      clearFallback(fallbackClip);
       for (const {video} of clips) video?.pause();
     },
   };
@@ -635,19 +675,37 @@ function mount(root, component) {
   const caseFilm = $('.case-film');
   const caseCaption = $('.case-caption');
   const scenarioGrid = $('#scenario-grid');
+  const featuredOrder = Object.values(PLAYBOOK_SCENES);
+
+  function selectFeatured(scene) {
+    featuredScene = scene;
+    hero.dataset.scene = scene;
+    for (const frame of heroFilms.children) {
+      const active = frame.dataset.film === scene;
+      frame.dataset.active = String(active);
+      if (active) {
+        const video = frame.querySelector('video');
+        if (video?.currentTime) video.currentTime = 0;
+      }
+    }
+    for (const choice of heroPicker.children) {
+      choice.setAttribute('aria-pressed', String(choice.dataset.filmChoice === scene));
+    }
+    filmPlayer.refresh();
+  }
+
+  function advanceFeatured() {
+    const next = (featuredOrder.indexOf(featuredScene) + 1) % featuredOrder.length;
+    selectFeatured(featuredOrder[next]);
+  }
 
   for (const [label, scene] of Object.entries(PLAYBOOK_SCENES)) {
     const featuredPicture = node('div', 'hero-shot');
     featuredPicture.dataset.film = scene;
     featuredPicture.dataset.active = String(scene === featuredScene);
     heroFilms.append(featuredPicture);
-    const choice = button(label, '', () => {
-      featuredScene = scene;
-      hero.dataset.scene = scene;
-      for (const frame of heroFilms.children) frame.dataset.active = String(frame.dataset.film === scene);
-      for (const item of heroPicker.children) item.setAttribute('aria-pressed', String(item === choice));
-      filmPlayer.refresh();
-    });
+    const choice = button(label, '', () => selectFeatured(scene));
+    choice.dataset.filmChoice = scene;
     choice.setAttribute('aria-pressed', String(scene === featuredScene));
     heroPicker.append(choice);
 
@@ -663,7 +721,7 @@ function mount(root, component) {
   }
   hero.dataset.scene = featuredScene;
 
-  const filmPlayer = createFilmMotion(root, data.films);
+  const filmPlayer = createFilmMotion(root, data.films, advanceFeatured);
   const disposeProximity = createProximityMotion(root);
 
   function previewScenario(example) {

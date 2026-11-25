@@ -435,11 +435,13 @@ nav a:hover,nav button:hover {
   inset: 0;
   background: var(--cb-raised) center/cover;
   opacity: 0;
+  translate: 3% 0;
   transform: translateY(calc(-36px * var(--reel-progress))) scale(1.085);
-  transition: opacity .6s var(--ease);
+  transition: opacity .6s var(--ease), translate .65s var(--ease);
 }
 .hero-shot[data-active=true] {
   opacity: 1;
+  translate: none;
 }
 .hero-shot .film-media {
   filter: contrast(1.07) saturate(.88);
