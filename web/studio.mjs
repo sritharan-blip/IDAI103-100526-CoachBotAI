@@ -129,8 +129,6 @@ function createProximityMotion(root) {
 
 function createFilmMotion(root, films) {
   const hero = root.querySelector('.hero');
-  const topbar = root.querySelector('.topbar');
-  const paperChapters = [...root.querySelectorAll('main > .mosaic-paper')];
   const toggle = root.querySelector('.motion-toggle');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const controller = new AbortController();
@@ -181,11 +179,6 @@ function createFilmMotion(root, films) {
     if (frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
-      const wordmark = topbar.getBoundingClientRect().top + 26;
-      root.dataset.paper = String(paperChapters.some(chapter => {
-        const {top, bottom} = chapter.getBoundingClientRect();
-        return top <= wordmark && bottom > wordmark;
-      }));
       if (root.dataset.motion !== 'on') {
         hero.style.removeProperty('--reel-progress');
         return;
@@ -214,7 +207,6 @@ function createFilmMotion(root, films) {
   }, {threshold: .16});
   for (const chapter of root.querySelectorAll('.case-shell .section-heading,.case-preview,.scenario-grid,.playbook-header,.mode-stage,.mode-index,.profile-intro,.profile-group,.output')) chapters.observe(chapter);
   document.addEventListener('scroll', updateScroll, {capture: true, passive: true, signal});
-  window.addEventListener('resize', updateScroll, {passive: true, signal});
   document.addEventListener('visibilitychange', refresh, {signal});
   reduced.addEventListener('change', refresh, {signal});
   toggle.addEventListener('click', () => { paused = !paused; refresh(); }, {signal});

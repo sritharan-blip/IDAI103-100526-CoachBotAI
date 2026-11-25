@@ -23,13 +23,6 @@ st.markdown(f"<style>{page_css}</style>", unsafe_allow_html=True)
 def render_hero():
     return """    <section class="hero" aria-labelledby="hero-title">
       <div class="shell hero-inner">
-        <div class="hero-reel" aria-label="Coaching footage">
-          <div class="hero-screen" id="hero-films" aria-hidden="true"></div>
-          <div class="hero-reel-controls">
-            <div class="hero-films" id="hero-film-picker" role="group" aria-label="Select a featured clip"></div>
-            <button class="film-trigger" id="watch-hero" type="button" aria-haspopup="dialog"><span aria-hidden="true">▷</span> Watch clip</button>
-          </div>
-        </div>
         <div class="hero-copy">
           <div class="eyebrow hero-eyebrow">COACHING STUDIO /</div>
           <h1 id="hero-title">COACHING<br><em>IN SESSION.</em></h1>
@@ -39,6 +32,13 @@ def render_hero():
               <a href="#builder" class="button primary">Start a session <span aria-hidden="true">↗</span></a>
               <button type="button" class="button ghost" id="load-example"><span class="play" aria-hidden="true">▷</span> Try an example</button>
             </div>
+          </div>
+        </div>
+        <div class="hero-reel" aria-label="Coaching footage">
+          <div class="hero-screen" id="hero-films" aria-hidden="true"></div>
+          <div class="hero-reel-controls">
+            <div class="hero-films" id="hero-film-picker" role="group" aria-label="Select a featured clip"></div>
+            <button class="film-trigger" id="watch-hero" type="button" aria-haspopup="dialog"><span aria-hidden="true">▷</span> Watch clip</button>
           </div>
         </div>
         <a class="hero-scroll" href="#scenarios">Explore scenarios <span aria-hidden="true">↓</span></a>

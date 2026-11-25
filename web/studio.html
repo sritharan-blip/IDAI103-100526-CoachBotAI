@@ -18,10 +18,16 @@
   <main>
     <!-- CoachBot hero -->
 
-    <div class="chapters mosaic-paper mosaic-edge">
-    <section class="scenarios chapter" id="scenarios" aria-labelledby="scenario-title">
+    <!-- CoachBot sports band -->
+
+    <section class="scenarios" id="scenarios" aria-labelledby="scenario-title">
       <div class="shell case-shell">
+        <div class="section-heading">
+          <h2 id="scenario-title">Pick a scenario.</h2>
+          <p>Four fictional athletes. Choose one to start a session.</p>
+        </div>
         <div class="case-layout">
+          <div class="scenario-grid" id="scenario-grid" role="group" aria-label="Choose a scenario to preview"></div>
           <article class="case-preview" aria-labelledby="case-title">
             <div class="case-film" aria-hidden="true"></div>
             <div class="case-detail">
@@ -36,18 +42,21 @@
               </div>
             </div>
           </article>
-          <div class="section-heading">
-            <h2 id="scenario-title">Pick a scenario.</h2>
-            <p>Four fictional athletes. Choose one to start a session.</p>
-          </div>
-          <div class="scenario-grid" id="scenario-grid" role="group" aria-label="Choose a scenario to preview"></div>
         </div>
       </div>
     </section>
 
-      <div id="builder">
-      <section class="shell playbook chapter" id="playbook" aria-labelledby="playbook-title">
+    <div class="shell builder" id="builder">
+      <section class="playbook" id="playbook" aria-labelledby="playbook-title">
+        <div class="playbook-header">
+          <h2 id="playbook-title">Coaching <em>playbook.</em></h2>
+          <div class="filters" id="filters" role="group" aria-label="Filter coaching modes"></div>
+        </div>
         <div class="playbook-layout">
+          <aside class="mode-index" aria-label="Coaching mode index">
+            <div class="mode-index-head"><p>Choose a mode</p><span id="mode-count"></span></div>
+            <div class="mode-list" id="modes" role="group" aria-label="Select a coaching mode"></div>
+          </aside>
           <div class="mode-stage">
             <div class="mode-visual" aria-hidden="true"></div>
             <div class="mode-scrim" aria-hidden="true"></div>
@@ -67,39 +76,9 @@
               </div>
             </div>
           </div>
-          <div class="playbook-header">
-            <h2 id="playbook-title">Coaching <em>playbook.</em></h2>
-            <div class="filters" id="filters" role="group" aria-label="Filter coaching modes"></div>
-          </div>
-          <aside class="mode-index" aria-label="Coaching mode index">
-            <div class="mode-index-head"><p>Choose a mode</p><span id="mode-count"></span></div>
-            <div class="mode-list" id="modes" role="group" aria-label="Select a coaching mode"></div>
-          </aside>
         </div>
       </section>
-      </div>
-      <section class="shell chapter sport-chapter" aria-labelledby="sport-title">
-        <div class="mosaic-chips" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        <h2 id="sport-title">Your sport.<br>Your position.</h2>
-        <!-- CoachBot sports band -->
-      </section>
-    </div>
-
-    <section class="mosaic-dark mosaic-edge mosaic-center" aria-labelledby="guidance-title">
-      <div class="mosaic-device" aria-hidden="true"><i></i></div>
-      <h2 id="guidance-title">Use fictional<br>profiles.</h2>
-      <p>Youth coaching prototype</p>
-    </section>
-
-    <section class="mosaic-paper mosaic-edge mosaic-center mosaic-connection" aria-labelledby="connection-title">
-      <div class="mosaic-chips" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-      <p class="eyebrow">GEMINI</p>
-      <h2 id="connection-title">Model<br>settings.</h2>
-      <button class="button ghost" data-open="settings" type="button">Model settings <span aria-hidden="true">↗</span></button>
-    </section>
-
-    <div class="builder mosaic-dark mosaic-edge">
-      <section class="shell workbench" id="athlete-profile" aria-labelledby="profile-title">
+      <section class="workbench" id="athlete-profile" aria-labelledby="profile-title">
         <div class="profile-intro">
           <h3 id="profile-title">Athlete<br>profile.</h3>
           <p>Set the goal, equipment and training readiness.</p>
@@ -152,41 +131,11 @@
         </form>
 
       </section>
-      <section class="shell panel output" id="output" aria-labelledby="output-title" aria-live="polite" hidden></section>
+      <section class="panel output" id="output" aria-labelledby="output-title" aria-live="polite" hidden></section>
     </div>
-
-    <section class="mosaic-paper mosaic-edge mosaic-center mosaic-review" aria-labelledby="review-chapter-title">
-      <h2 id="review-chapter-title">Review lab.</h2>
-      <p>Compare two plans or export the last 12 runs for your assessment.</p>
-      <button class="button ghost" data-open="review" type="button">Review Lab <span aria-hidden="true">↗</span></button>
-    </section>
-
-    <section class="mosaic-dark mosaic-edge mosaic-faq" aria-labelledby="faq-title">
-      <div class="shell mosaic-faq-inner">
-        <h2 id="faq-title">Before you<br>start a session.</h2>
-        <div>
-          <details><summary>Sample mode</summary><p>Samples use built-in plans and work without a key.</p></details>
-          <details><summary>Training goal</summary><p>Set the goal, equipment and training readiness.</p></details>
-          <details><summary>Model settings</summary><p>CoachBot tries the primary Gemini key first, then the backup after an eligible key, quota, or service error.</p></details>
-          <details><summary>Review Lab</summary><p>Compare two plans or export the last 12 runs for your assessment.</p></details>
-        </div>
-      </div>
-    </section>
-
-    <section class="mosaic-paper mosaic-edge mosaic-center mosaic-cta" aria-labelledby="closing-title">
-      <div class="mosaic-chips" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-      <h2 id="closing-title">Your next<br>move.</h2>
-      <a href="#builder" class="button primary">Start a session <span aria-hidden="true">↗</span></a>
-    </section>
   </main>
 
-  <footer class="footer mosaic-dark mosaic-edge">
-    <div class="shell footer-inner">
-      <span>Youth coaching prototype · use fictional profiles</span>
-      <nav aria-label="Footer navigation"><a href="#scenarios">Scenarios</a><a href="#playbook">Playbook</a><a href="#athlete-profile">Athlete profile</a></nav>
-      <a href="#top" class="footer-home" aria-label="CoachBot AI, back to top">COACHBOT AI <span aria-hidden="true">↑</span></a>
-    </div>
-  </footer>
+  <footer class="shell footer"><span>COACHBOT AI</span><span>Youth coaching prototype · use fictional profiles</span><a href="#top">Back to top ↑</a></footer>
 
   <dialog class="modal menu-panel" id="studio-menu" aria-labelledby="menu-title">
     <div class="modal-head"><h2 id="menu-title">Explore CoachBot</h2><button class="close" type="button" aria-label="Close CoachBot menu">×</button></div>
