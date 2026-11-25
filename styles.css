@@ -2,10 +2,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&family=Space+Mono:wght@700&display=swap');
 
 :root {
-  --cb-background: #101213;
-  --cb-surface: #15191a;
-  --cb-panel: #1b2022;
-  --cb-raised: #283034;
+  --cb-background: #0d0d0d;
+  --cb-surface: #121212;
+  --cb-panel: #171717;
+  --cb-raised: #232323;
   --cb-text: #f5f5f0;
   --cb-secondary: #bdbdbd;
   --cb-muted: #8a8a8a;
@@ -15,15 +15,15 @@
   --cb-line-strong: rgb(255 255 255 / 28%);
   --cb-hairline: rgb(255 255 255 / 4%);
   --cb-scrim: rgb(0 0 0 / 75%);
-  --cb-accent: #8eeaff;
+  --cb-accent: #d6ff39;
   --cb-on-accent: #0a0a0a;
   --cb-paper: #eeefe9;
   --cb-paper-bright: #fafbf6;
-  --cb-ink: #191f20;
-  --cb-paper-muted: #49585c;
-  --cb-paper-line: #afb9b7;
-  --cb-paper-accent: #00586c;
-  --cb-paper-active: #d5f4f8;
+  --cb-ink: #1a1a1a;
+  --cb-paper-muted: #51534b;
+  --cb-paper-line: #b5b8aa;
+  --cb-paper-accent: color-mix(in srgb, var(--cb-accent) 34%, var(--cb-black));
+  --cb-paper-active: color-mix(in srgb, var(--cb-accent) 23%, var(--cb-paper-bright));
   --cb-font: 'Geist', system-ui, sans-serif;
   --cb-display: 'Geist', system-ui, sans-serif;
   --cb-mono: 'IBM Plex Mono', Consolas, monospace;
@@ -2032,7 +2032,7 @@ textarea {
 /* Scenario gallery as a paper chapter with a continuous selector */
 .scenarios {
   background: var(--cb-paper);
-  background-image: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), rgb(25 31 32 / 8%) calc(25% - 1px) 25%);
+  background-image: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), rgb(0 0 0 / 8%) calc(25% - 1px) 25%);
   color: var(--cb-ink);
 }
 .case-shell .section-heading { align-items: end; }
